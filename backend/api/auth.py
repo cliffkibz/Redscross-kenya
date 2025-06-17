@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_required, get_jwt_identity, get_jwt
@@ -137,4 +137,12 @@ def change_password():
 def logout():
     # In a real application, you might want to blacklist the token
     # For now, we'll just return a success message
-    return jsonify({'message': 'Successfully logged out'}), 200 
+    return jsonify({'message': 'Successfully logged out'}), 200
+
+@auth_bp.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
+@auth_bp.route('/register', methods=['GET'])
+def register_page():
+    return render_template('register.html')

@@ -30,6 +30,13 @@ main {
     margin-right: 5px;
 }
 
+/* Sticky Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
 /* Cards */
 .card {
     border: none;
@@ -63,6 +70,19 @@ main {
 .btn-primary:hover {
     background-color: #c82333;
     border-color: #bd2130;
+}
+
+/* Admin Button */
+.btn-admin {
+    background-color: var(--secondary-color) !important;
+    color: #fff !important;
+    border: none;
+    margin-left: 10px;
+}
+
+.btn-admin:hover {
+    background-color: #495057 !important;
+    color: #fff !important;
 }
 
 /* Forms */
@@ -273,4 +293,4 @@ main {
 .alert-info {
     background-color: #d1ecf1;
     color: #0c5460;
-} 
+}

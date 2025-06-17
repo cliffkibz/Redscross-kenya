@@ -1,13 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Login - Red Cross Kenya{% endblock %}
+{% block title %}Register - Red Cross Kenya{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="mb-4 text-center text-danger">Login</h2>
-                    <form id="login-form" method="post" action="{{ url_for('auth.login') }}">
+                    <h2 class="mb-4 text-center text-danger">Register</h2>
+                    <form id="register-form" method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" required>
@@ -16,23 +20,15 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-danger w-100">Login</button>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone (optional)</label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Register</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script>
-// Store form data in localStorage on submit
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        localStorage.setItem('login_email', email);
-        localStorage.setItem('login_password', password); // Not secure, for demo only
-    });
-}
-</script>
 {% endblock %}

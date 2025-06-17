@@ -38,8 +38,8 @@
                     
                     <div class="mt-5 text-center">
                         <p>To get started, please login or register an account.</p>
-                        <a href="/login" class="btn btn-primary btn-lg me-2">Login</a>
-                        <a href="/register" class="btn btn-success btn-lg">Register</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg">Register</a>
                     </div>
                 </div>
                 <div class="card-footer text-center py-3">
@@ -49,4 +49,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
