@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}All Incidents - Red Cross Kenya{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-danger">Incident Management</h2>
+            <p class="lead">View, filter, and manage all reported disaster incidents. Use the filters below to find specific incidents by type, status, or severity. Click on an incident to view more details or take action.</p>
+        </div>
+    </div>
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-md-3 mb-2">
+            <input type="text" class="form-control" id="filter-title" placeholder="Search by title...">
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="filter-type">
+                <option value="">All Types</option>
+                <option value="Fire">Fire</option>
+                <option value="Flood">Flood</option>
+                <option value="Accident">Accident</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="filter-status">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+            </select>
+        </div>
+        <div class="col-md-3 mb-2">
+            <select class="form-select" id="filter-severity">
+                <option value="">All Severities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+        </div>
+    </div>
+    <!-- Add Incident Button -->
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-end">
+            <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addIncidentModal"><i class="fas fa-plus"></i> Add Incident</a>
+        </div>
+    </div>
+    <!-- Incidents Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">Incidents List</div>
+                <div class="card-body p-0">
+                    <div id="incidents-loading" class="text-center py-4 d-none">
+                        <div class="spinner-border text-danger" role="status"><span class="visually-hidden">Loading...</span></div>
+                    </div>
+                    <table class="table table-striped mb-0" id="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Severity</th>
+                                <th>Location</th>
+                                <th>Reported By</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Incidents will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                    <div id="incidents-empty" class="text-center py-4 d-none">
+                        <span class="text-muted">No incidents found for the selected filters.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pagination -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-center">
+            <nav>
+                <ul class="pagination" id="incidents-pagination">
+                    <!-- Pagination will be loaded here by JS -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- Add Incident Modal -->
+    <div class="modal fade" id="addIncidentModal" tabindex="-1" aria-labelledby="addIncidentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="add-incident-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addIncidentModalLabel">Add New Incident</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="incident-title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="incident-title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incident-type" class="form-label">Type</label>
+                            <input type="text" class="form-control" id="incident-type" name="incident_type" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incident-severity" class="form-label">Severity</label>
+                            <select class="form-select" id="incident-severity" name="severity">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incident-location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="incident-location" name="location">
+                        </div>
+                        <div class="mb-3">
+                            <label for="incident-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="incident-description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Add Incident</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Incident Details Modal -->
+    <div class="modal fade" id="incidentDetailsModal" tabindex="-1" aria-labelledby="incidentDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incidentDetailsModalLabel">Incident Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="incident-details-body">
+                    <!-- Details will be loaded here by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentPage = 1;
+let totalPages = 1;
+let currentFilters = {};
+
+function getToken() {
+    return localStorage.getItem('auth_token');
+}
+
+function loadIncidents(page = 1) {
+    currentPage = page;
+    const title = document.getElementById('filter-title').value;
+    const type = document.getElementById('filter-type').value;
+    const status = document.getElementById('filter-status').value;
+    const severity = document.getElementById('filter-severity').value;
+    currentFilters = { title, type, status, severity };
+    let url = `/api/incidents/?per_page=10&page=${page}`;
+    if (type) url += `&type=${encodeURIComponent(type)}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+    if (severity) url += `&severity=${encodeURIComponent(severity)}`;
+    document.getElementById('incidents-loading').classList.remove('d-none');
+    const token = getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(url, { headers })
+        .then(res => {
+            if (res.status === 401) {
+                document.getElementById('incidents-loading').classList.add('d-none');
+                document.getElementById('incidents-empty').classList.remove('d-none');
+                document.getElementById('incidents-empty').innerHTML = '<span class="text-danger">Please log in to view incidents.</span>';
+                return null;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
+            document.getElementById('incidents-loading').classList.add('d-none');
+            const tbody = document.querySelector('#incidents-table tbody');
+            tbody.innerHTML = '';
+            if (data.incidents && data.incidents.length > 0) {
+                document.getElementById('incidents-empty').classList.add('d-none');
+                data.incidents.forEach(incident => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${incident.title}</td>
+                        <td>${incident.incident_type}</td>
+                        <td>${incident.status || ''}</td>
+                        <td>${incident.severity || ''}</td>
+                        <td>${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</td>
+                        <td>${incident.reporter_id || ''}</td>
+                        <td>${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</td>
+                        <td><button class="btn btn-sm btn-outline-info" onclick="viewIncidentDetails('${incident._id || incident.id}')">View</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                document.getElementById('incidents-empty').classList.remove('d-none');
+            }
+            // Pagination
+            totalPages = data.total_pages || 1;
+            renderPagination();
+        });
+}
+
+function renderPagination() {
+    const pagination = document.getElementById('incidents-pagination');
+    pagination.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadIncidents(i);
+        });
+        pagination.appendChild(li);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadIncidents();
+    document.getElementById('add-incident-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        fetch('/api/incidents/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(() => {
+            loadIncidents();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('addIncidentModal'));
+            modal.hide();
+            e.target.reset();
+        });
+    });
+    // Filters
+    document.getElementById('filter-title').addEventListener('input', () => loadIncidents(1));
+    document.getElementById('filter-type').addEventListener('change', () => loadIncidents(1));
+    document.getElementById('filter-status').addEventListener('change', () => loadIncidents(1));
+    document.getElementById('filter-severity').addEventListener('change', () => loadIncidents(1));
+});
+
+// View Incident Details
+function viewIncidentDetails(incidentId) {
+    const token = getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(`/api/incidents/${incidentId}`, { headers })
+        .then(res => res.json())
+        .then(incident => {
+            const body = document.getElementById('incident-details-body');
+            body.innerHTML = `
+                <h4>${incident.title}</h4>
+                <p><strong>Type:</strong> ${incident.incident_type}</p>
+                <p><strong>Status:</strong> ${incident.status || ''}</p>
+                <p><strong>Severity:</strong> ${incident.severity || ''}</p>
+                <p><strong>Location:</strong> ${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</p>
+                <p><strong>Description:</strong> ${incident.description || ''}</p>
+                <p><strong>Reported By:</strong> ${incident.reporter_id || ''}</p>
+                <p><strong>Date:</strong> ${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</p>
+            `;
+            var modal = new bootstrap.Modal(document.getElementById('incidentDetailsModal'));
+            modal.show();
+        });
+}
+</script>
+{% endblock %}

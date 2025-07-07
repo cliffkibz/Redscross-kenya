@@ -1,5 +1,5 @@
 from flask import Flask, render_template, g, request, flash, redirect, url_for, session, get_flashed_messages
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, exceptions as jwt_exceptions
+from flask_jwt_extended import JWTManager,decode_token, verify_jwt_in_request, get_jwt_identity, exceptions as jwt_exceptions
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -48,23 +48,34 @@ def load_user_from_jwt():
         user_id = get_jwt_identity()
         if user_id:
             g.current_user = User.get_by_id(user_id)
-    except jwt_exceptions.NoAuthorizationError:
-        # No JWT provided, g.current_user remains None
+            return
+    except Exception:
         pass
-    except jwt_exceptions.InvalidHeaderError as e:
-        # Handle invalid JWT headers, e.g., malformed token
-        # For now, just set current_user to None and potentially log the error
-        app.logger.warning(f"Invalid JWT header: {e}")
-        pass
-    except Exception as e:
-        app.logger.error(f"Error loading user from JWT: {e}")
-        pass
+    # Try cookie (browser navigation)
+    token = request.cookies.get('access_token')
+    if token:
+        try:
+            decoded = decode_token(token)
+            user_id = decoded.get('sub')
+            if user_id:
+                g.current_user = User.get_by_id(user_id)
+        except Exception:
+            pass
 
 # Context processor to make variables available to all templates
 @app.context_processor
 def inject_globals():
+    class AnonymousUser:
+        is_authenticated = False
+        username = ''
+        role = ''
+    user = g.current_user if g.current_user else AnonymousUser()
+    if user and hasattr(user, 'is_active') and user.is_active:
+        user.is_authenticated = True
+    else:
+        user.is_authenticated = False
     return dict(
-        current_user=g.current_user,
+        current_user=user,
         get_flashed_messages=get_flashed_messages,
         now=datetime.utcnow()
     )
@@ -97,6 +108,61 @@ def contact():
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')
+
+@app.route('/dashboard', endpoint='user_dashboard')
+def user_dashboard():
+    user = getattr(g, 'current_user', None)
+    if not user:
+        return redirect(url_for('auth.login_page'))
+    from backend.models.incident import Incident
+    report_count = Incident.count_by_user(user._id)
+    return render_template('user_dashboard.html', current_user=user, report_count=report_count)
+
+# Admin Dashboard
+@app.route('/admin/dashboard', endpoint='admin_dashboard')
+def admin_dashboard():
+    user = getattr(g, 'current_user', None)
+    if not user or user.role != 'admin':
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('auth.login_page'))
+
+    # Import models
+    from backend.models.incident import Incident
+    from backend.models.resource import Resource
+    from backend.models.user import User
+    from backend.utils.db import get_db
+    db = get_db()
+
+    # Stats
+    stats = {
+        'incident_count': db.incidents.count_documents({}),
+        'responder_count': db.users.count_documents({'role': 'responder', 'is_active': True}),
+        'resource_count': db.resources.count_documents({'status': 'available'})
+    }
+
+    # Recent incidents (limit 10)
+    incidents = list(db.incidents.find().sort('created_at', -1).limit(10))
+    for inc in incidents:
+        inc['id'] = str(inc['_id'])
+        inc['reporter_name'] = db.users.find_one({'_id': inc['reporter_id']})['username'] if db.users.find_one({'_id': inc['reporter_id']}) else 'Unknown'
+
+    # Resources (limit 10)
+    resources = list(db.resources.find().sort('created_at', -1).limit(10))
+    for res in resources:
+        res['id'] = str(res['_id'])
+
+    # Users (limit 10)
+    users = list(db.users.find().sort('created_at', -1).limit(10))
+    for u in users:
+        u['id'] = str(u['_id'])
+
+    return render_template(
+        'admin_dashboard.html',
+        stats=stats,
+        incidents=incidents,
+        resources=resources,
+        users=users
+    )
 
 # Error handlers
 @app.errorhandler(404)

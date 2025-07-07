@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Manage Resources - Red Cross Kenya{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="text-success">Resource Management</h2>
+            <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addResourceModal"><i class="fas fa-plus"></i> Add Resource</a>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">Resources List</div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0" id="resources-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Location</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Resources will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Add Resource Modal -->
+    <div class="modal fade" id="addResourceModal" tabindex="-1" aria-labelledby="addResourceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="add-resource-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addResourceModalLabel">Add New Resource</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="resource-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="resource-name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resource-type" class="form-label">Type</label>
+                            <input type="text" class="form-control" id="resource-type" name="type" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resource-location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="resource-location" name="location">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Add Resource</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Fetch and display resources
+function loadResources() {
+    fetch('/api/resources/')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.querySelector('#resources-table tbody');
+            tbody.innerHTML = '';
+            if (data.resources && data.resources.length > 0) {
+                data.resources.forEach(resource => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${resource.name}</td>
+                        <td>${resource.type}</td>
+                        <td>${resource.status}</td>
+                        <td>${resource.location || ''}</td>
+                        <td><button class="btn btn-sm btn-outline-danger">Delete</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No resources found.</td></tr>';
+            }
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadResources();
+    document.getElementById('add-resource-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        fetch('/api/resources/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(() => {
+            loadResources();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('addResourceModal'));
+            modal.hide();
+            e.target.reset();
+        });
+    });
+});
+</script>
+{% endblock %}

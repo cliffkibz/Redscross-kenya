@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Send Test Alert - Red Cross Kenya{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-warning">Send Test Alert</h2>
+            <p class="lead">Use this form to send a test alert to responders or a specific phone number.</p>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">Test Alert Form</div>
+                <div class="card-body">
+                    <form id="send-alert-form">
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number (optional)</label>
+                            <input type="text" class="form-control" id="phone" name="phone_number" placeholder="e.g. 0712345678">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="3" required>Test alert: This is a drill.</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning">Send Alert</button>
+                    </form>
+                    <div id="alert-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('send-alert-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    fetch('/api/alerts/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+        const resultDiv = document.getElementById('alert-result');
+        if (result.error) {
+            resultDiv.innerHTML = `<div class='alert alert-danger'>${result.error}</div>`;
+        } else {
+            resultDiv.innerHTML = `<div class='alert alert-success'>${result.message || 'Alert sent successfully.'}</div>`;
+        }
+    });
+});
+</script>
+{% endblock %}

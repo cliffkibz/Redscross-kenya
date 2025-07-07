@@ -77,16 +77,21 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 // Authentication Functions
-async function login(email, password) {
+async function login(username, password) {
     try {
         const data = await apiRequest('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, password })
         });
 
         setTokens(data.access_token, data.refresh_token);
+        document.cookie = `access_token=${data.access_token}; path=/; SameSite=Lax`;
         showToast('success', 'Login successful');
-        window.location.href = '/';
+        if (data.user && data.user.role === 'admin') {
+            window.location.href = '/admin/dashboard';
+        } else {
+            window.location.href = '/dashboard';
+        }
     } catch (error) {
         showToast('error', error.message);
         throw error;
@@ -102,7 +107,7 @@ async function register(userData) {
 
         setTokens(data.access_token, data.refresh_token);
         showToast('success', 'Registration successful');
-        window.location.href = '/';
+        window.location.href = '/dashboard';
     } catch (error) {
         showToast('error', error.message);
         throw error;
@@ -132,11 +137,11 @@ async function getCurrentUser() {
 // Form Handling
 function handleLogin(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value;
+    const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
     showLoading();
-    login(email, password)
+    login(username, password)
         .catch(error => console.error('Login error:', error))
         .finally(hideLoading);
 }
@@ -229,4 +234,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-}); 
+});

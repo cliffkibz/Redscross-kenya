@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_required, get_jwt_identity, get_jwt
@@ -31,6 +31,7 @@ def register():
             role=data.get('role', 'public'),
             phone=data.get('phone')
         )
+        user.is_active = True  # Ensure user is active on registration
         user.save()
         
         # Create tokens
@@ -45,26 +46,29 @@ def register():
         }), 201
         
     except Exception as e:
+        import logging
+        logging.exception("Registration failed:")
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    import logging
     data = request.get_json()
-    
-    if not data or not data.get('email') or not data.get('password'):
-        return jsonify({'error': 'Missing email or password'}), 400
-    
-    user = User.get_by_email(data['email'])
-    if not user or not user.verify_password(data['password']):
-        return jsonify({'error': 'Invalid email or password'}), 401
-    
+    if not data or not data.get('username') or not data.get('password'):
+        logging.warning(f"Login failed: Missing username or password. Data: {data}")
+        return jsonify({'error': 'Missing username or password'}), 400
+    user = User.get_by_username(data['username'])
+    if not user:
+        logging.warning(f"Login failed: Username not found: {data.get('username')}")
+        return jsonify({'error': 'Invalid username or password'}), 401
+    if not user.verify_password(data['password']):
+        logging.warning(f"Login failed: Wrong password for user: {data.get('username')}")
+        return jsonify({'error': 'Invalid username or password'}), 401
     if not user.is_active:
+        logging.warning(f"Login failed: Inactive account for user: {data.get('username')}")
         return jsonify({'error': 'Account is deactivated'}), 403
-    
-    # Create tokens
     access_token = create_access_token(identity=str(user._id))
     refresh_token = create_refresh_token(identity=str(user._id))
-    
     return jsonify({
         'message': 'Login successful',
         'user': user.to_dict(),
@@ -146,3 +150,8 @@ def login_page():
 @auth_bp.route('/register', methods=['GET'])
 def register_page():
     return render_template('register.html')
+
+@auth_bp.route('/post_login')
+def post_login():
+    # This route can be used as a redirect after login/register
+    return redirect(url_for('user_dashboard'))

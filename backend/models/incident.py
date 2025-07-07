@@ -49,6 +49,11 @@ class Incident:
             return incident
         return None
     
+    @staticmethod
+    def count_by_user(user_id):
+        db = get_db()
+        return db.incidents.count_documents({'reporter_id': user_id})
+    
     def save(self):
         db = get_db()
         incident_data = {
@@ -124,4 +129,4 @@ class Incident:
             'assigned_resources': [str(r) for r in self.assigned_resources],
             'responders': [str(r) for r in self.responders],
             'notes': self.notes
-        } 
+        }

@@ -55,6 +55,26 @@ class User:
             return user
         return None
     
+    @staticmethod
+    def get_by_username(username):
+        db = get_db()
+        user_data = db.users.find_one({'username': username})
+        if user_data:
+            user = User(
+                username=user_data['username'],
+                email=user_data['email'],
+                password='',  # Password not returned for security
+                role=user_data['role'],
+                phone=user_data.get('phone')
+            )
+            user._id = user_data['_id']
+            user.password_hash = user_data['password_hash']
+            user.created_at = user_data['created_at']
+            user.updated_at = user_data['updated_at']
+            user.is_active = user_data['is_active']
+            return user
+        return None
+    
     def save(self):
         db = get_db()
         user_data = {
@@ -90,4 +110,4 @@ class User:
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'is_active': self.is_active
-        } 
+        }
