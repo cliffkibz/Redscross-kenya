@@ -2,7 +2,100 @@
 
 {% block title %}Home - Red Cross Kenya{% endblock %}
 
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Background slideshow logic
+    const bgImages = [
+        // Replace these URLs with your own Red Cross images
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=1200&q=80'
+    ];
+    let bgIndex = 0;
+    const bgSlideshow = document.getElementById('bg-slideshow');
+    function setBgImage(idx) {
+        bgSlideshow.style.backgroundImage = `url('${bgImages[idx]}')`;
+    }
+    setBgImage(bgIndex);
+    setInterval(() => {
+        bgIndex = (bgIndex + 1) % bgImages.length;
+        setBgImage(bgIndex);
+    }, 5000); // Change image every 5 seconds
+
+    // Live Alerts logic
+    function getToken() {
+        return localStorage.getItem('auth_token');
+    }
+    function fetchLiveAlerts() {
+        const token = getToken();
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        fetch('/api/incidents/?per_page=5', { headers })
+            .then(response => {
+                if (response.status === 401) {
+                    const alertsList = document.getElementById('live-alerts');
+                    alertsList.innerHTML = '<li>Please log in to view real-time alerts.</li>';
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                const alertsList = document.getElementById('live-alerts');
+                alertsList.innerHTML = '';
+                if (data.incidents && data.incidents.length > 0) {
+                    data.incidents.forEach(incident => {
+                        let icon = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+                        if (incident.incident_type && incident.incident_type.toLowerCase().includes('fire')) {
+                            icon = '<i class="fas fa-fire text-warning"></i>';
+                        } else if (incident.incident_type && incident.incident_type.toLowerCase().includes('accident')) {
+                            icon = '<i class="fas fa-car-crash text-primary"></i>';
+                        }
+                        const location = incident.location && incident.location.county ? incident.location.county : 'Unknown';
+                        const time = new Date(incident.created_at).toLocaleString();
+                        const li = document.createElement('li');
+                        li.innerHTML = `${icon} <strong>${incident.title}</strong> in ${location}. <span class="text-muted">${time}</span>`;
+                        alertsList.appendChild(li);
+                    });
+                } else {
+                    alertsList.innerHTML = '<li>No recent incidents.</li>';
+                }
+            })
+            .catch(() => {
+                const alertsList = document.getElementById('live-alerts');
+                alertsList.innerHTML = '<li>Error loading alerts.</li>';
+            });
+    }
+    fetchLiveAlerts();
+    setInterval(fetchLiveAlerts, 30000);
+});
+</script>
+{% endblock %}
+
 {% block content %}
+<!-- Background Slideshow -->
+<style>
+#bg-slideshow {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    opacity: 0.40; /* Slightly increased opacity for background effect */
+    pointer-events: none;
+    transition: background-image 1s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+#main-content {
+    position: relative;
+    z-index: 1;
+}
+</style>
+<div id="bg-slideshow"></div>
+<div id="main-content">
 <div class="container mt-5">
     <!-- Hero Section -->
     <div class="row align-items-center mb-5">
@@ -107,57 +200,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function getToken() {
-    return localStorage.getItem('auth_token');
-}
-
-function fetchLiveAlerts() {
-    const token = getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    fetch('/api/incidents/?per_page=5', { headers })
-        .then(response => {
-            if (response.status === 401) {
-                const alertsList = document.getElementById('live-alerts');
-                alertsList.innerHTML = '<li>Please log in to view real-time alerts.</li>';
-                return null;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return;
-            const alertsList = document.getElementById('live-alerts');
-            alertsList.innerHTML = '';
-            if (data.incidents && data.incidents.length > 0) {
-                data.incidents.forEach(incident => {
-                    let icon = '<i class="fas fa-exclamation-triangle text-danger"></i>';
-                    if (incident.incident_type && incident.incident_type.toLowerCase().includes('fire')) {
-                        icon = '<i class="fas fa-fire text-warning"></i>';
-                    } else if (incident.incident_type && incident.incident_type.toLowerCase().includes('accident')) {
-                        icon = '<i class="fas fa-car-crash text-primary"></i>';
-                    }
-                    const location = incident.location && incident.location.county ? incident.location.county : 'Unknown';
-                    const time = new Date(incident.created_at).toLocaleString();
-                    const li = document.createElement('li');
-                    li.innerHTML = `${icon} <strong>${incident.title}</strong> in ${location}. <span class="text-muted">${time}</span>`;
-                    alertsList.appendChild(li);
-                });
-            } else {
-                alertsList.innerHTML = '<li>No recent incidents.</li>';
-            }
-        })
-        .catch(() => {
-            const alertsList = document.getElementById('live-alerts');
-            alertsList.innerHTML = '<li>Error loading alerts.</li>';
-        });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    fetchLiveAlerts();
-    setInterval(fetchLiveAlerts, 30000);
-});
-</script>
 {% endblock %}

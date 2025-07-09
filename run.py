@@ -32,12 +32,14 @@ from backend.api.auth import auth_bp
 from backend.api.incidents import incidents_bp
 from backend.api.resources import resources_bp
 from backend.api.alerts import alerts_bp
+from backend.api.chatbot import chatbot_bp
 from backend.models.user import User # Import User model
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(incidents_bp, url_prefix='/api/incidents')
 app.register_blueprint(resources_bp, url_prefix='/api/resources')
 app.register_blueprint(alerts_bp, url_prefix='/api/alerts')
+app.register_blueprint(chatbot_bp)  # Register chatbot blueprint
 
 # Before request: Load current user from JWT if available
 @app.before_request
