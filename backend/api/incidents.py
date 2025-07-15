@@ -72,14 +72,11 @@ def create_incident():
         return jsonify({'error': str(e)}), 500
 
 @incidents_bp.route('/', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_incidents():
-    current_user_id = get_jwt_identity()
-    user = User.get_by_id(current_user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    
-    # Get query parameters
+    # Allow public access to incidents list
+    # If user is authenticated, can add user-specific logic if needed
+    # Otherwise, show all incidents
     status = request.args.get('status')
     incident_type = request.args.get('type')
     severity = request.args.get('severity')
@@ -245,4 +242,25 @@ def add_note(incident_id):
     return jsonify({
         'message': 'Note added successfully',
         'incident': incident.to_dict()
-    }), 200 
+    }), 200  
+
+@incidents_bp.route('/locations', methods=['GET'])
+@jwt_required()
+def get_incident_locations():
+    """
+    Returns a list of incidents with latitude and longitude for map display.
+    """
+    # Only return incidents with valid coordinates
+    incidents = db.incidents.find({
+        "latitude": {"$ne": None},
+        "longitude": {"$ne": None}
+    })
+    data = []
+    for incident in incidents:
+        data.append({
+            "title": incident.get("title", ""),
+            "latitude": incident.get("latitude"),
+            "longitude": incident.get("longitude"),
+            "location": incident.get("location", "")
+        })
+    return jsonify(data), 200 

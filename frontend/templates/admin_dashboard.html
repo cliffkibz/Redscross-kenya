@@ -75,8 +75,11 @@
                                 <td>{{ incident.severity }}</td>
                                 <td>{{ incident.reporter_name }}</td>
                                 <td>
-                                    <a href="{{ url_for('incidents.get_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-info">View</a>
-                                    <a href="{{ url_for('incidents.update_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-warning">Update</a>
+                                    <a href="{{ url_for('admin_view_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-info">View</a>
+                                    <a href="{{ url_for('admin_update_incident', incident_id=incident.id) }}" class="btn btn-sm btn-outline-warning">Update</a>
+                                    <form action="{{ url_for('admin_delete_incident', incident_id=incident.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this incident?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                         {% else %}
@@ -141,6 +144,44 @@
                             </tr>
                         {% else %}
                             <tr><td colspan="4" class="text-center">No users found.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <!-- Help Requests Table -->
+        <div class="col-md-12 mb-3">
+            <div class="card">
+                <div class="card-header bg-warning text-white">Recent Help Requests</div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Type of Help</th>
+                                <th>Details</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for req in help_requests %}
+                            <tr>
+                                <td>{{ req.name }}</td>
+                                <td>{{ req.email }}</td>
+                                <td>{{ req.phone }}</td>
+                                <td>{{ req.location }}</td>
+                                <td>{{ req.help_type }}</td>
+                                <td>{{ req.details }}</td>
+                                <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') if req.created_at else '' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center">No help requests found.</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>

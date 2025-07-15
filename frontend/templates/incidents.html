@@ -2,6 +2,21 @@
 {% block title %}All Incidents - Red Cross Kenya{% endblock %}
 {% block content %}
 <div class="container py-5">
+    <!-- Live Alerts Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning shadow-sm mb-3">
+                <div class="card-header bg-warning text-white">
+                    <i class="fas fa-bolt"></i> Live Alerts (Disaster News)
+                </div>
+                <div class="card-body p-2">
+                    <marquee id="news-marquee" behavior="scroll" direction="left" scrollamount="6" style="font-size:1.1rem;">
+                        Loading live alerts...
+                    </marquee>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Hero Section -->
     <div class="row mb-4">
         <div class="col-12">
@@ -45,6 +60,17 @@
     <div class="row mb-3">
         <div class="col-12 d-flex justify-content-end">
             <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addIncidentModal"><i class="fas fa-plus"></i> Add Incident</a>
+        </div>
+    </div>
+    <!-- Map Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">Affected Areas Map</div>
+                <div class="card-body p-0">
+                    <div id="map" style="height: 400px; width: 100%;"></div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Incidents Table -->
@@ -151,7 +177,36 @@
 </div>
 {% endblock %}
 {% block scripts %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2H1LG2Q6F2zjG1rjQbQ+1rQ6U1p5l1lLxA0hBOk=" crossorigin=""/>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6Gk6h+g1kQ+1rQ6U1p5l1lLxA0hBOk=" crossorigin=""></script>
 <script>
+// Initialize the map
+let map = L.map('map').setView([0.0236, 37.9062], 6); // Centered on Kenya
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+// Placeholder for adding incident markers
+async function loadIncidentLocations() {
+    try {
+        const data = await apiRequest('/incidents/locations');
+        if (Array.isArray(data)) {
+            data.forEach(incident => {
+                if (incident.latitude && incident.longitude) {
+                    L.marker([incident.latitude, incident.longitude])
+                        .addTo(map)
+                        .bindPopup(`<b>${incident.title}</b><br>${incident.location || ''}`);
+                }
+            });
+        }
+    } catch (error) {
+        // Optionally handle error
+    }
+}
+loadIncidentLocations();
+</script>
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
@@ -160,58 +215,50 @@ function getToken() {
     return localStorage.getItem('auth_token');
 }
 
-function loadIncidents(page = 1) {
+async function loadIncidents(page = 1) {
     currentPage = page;
     const title = document.getElementById('filter-title').value;
     const type = document.getElementById('filter-type').value;
     const status = document.getElementById('filter-status').value;
     const severity = document.getElementById('filter-severity').value;
     currentFilters = { title, type, status, severity };
-    let url = `/api/incidents/?per_page=10&page=${page}`;
+    let url = `/incidents/?per_page=10&page=${page}`;
     if (type) url += `&type=${encodeURIComponent(type)}`;
     if (status) url += `&status=${encodeURIComponent(status)}`;
     if (severity) url += `&severity=${encodeURIComponent(severity)}`;
     document.getElementById('incidents-loading').classList.remove('d-none');
-    const token = getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    fetch(url, { headers })
-        .then(res => {
-            if (res.status === 401) {
-                document.getElementById('incidents-loading').classList.add('d-none');
-                document.getElementById('incidents-empty').classList.remove('d-none');
-                document.getElementById('incidents-empty').innerHTML = '<span class="text-danger">Please log in to view incidents.</span>';
-                return null;
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data) return;
-            document.getElementById('incidents-loading').classList.add('d-none');
-            const tbody = document.querySelector('#incidents-table tbody');
-            tbody.innerHTML = '';
-            if (data.incidents && data.incidents.length > 0) {
-                document.getElementById('incidents-empty').classList.add('d-none');
-                data.incidents.forEach(incident => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${incident.title}</td>
-                        <td>${incident.incident_type}</td>
-                        <td>${incident.status || ''}</td>
-                        <td>${incident.severity || ''}</td>
-                        <td>${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</td>
-                        <td>${incident.reporter_id || ''}</td>
-                        <td>${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</td>
-                        <td><button class="btn btn-sm btn-outline-info" onclick="viewIncidentDetails('${incident._id || incident.id}')">View</button></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                document.getElementById('incidents-empty').classList.remove('d-none');
-            }
-            // Pagination
-            totalPages = data.total_pages || 1;
-            renderPagination();
-        });
+    try {
+        const data = await apiRequest(url);
+        document.getElementById('incidents-loading').classList.add('d-none');
+        const tbody = document.querySelector('#incidents-table tbody');
+        tbody.innerHTML = '';
+        if (data.incidents && data.incidents.length > 0) {
+            document.getElementById('incidents-empty').classList.add('d-none');
+            data.incidents.forEach(incident => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${incident.title}</td>
+                    <td>${incident.incident_type}</td>
+                    <td>${incident.status || ''}</td>
+                    <td>${incident.severity || ''}</td>
+                    <td>${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</td>
+                    <td>${incident.reporter_id || ''}</td>
+                    <td>${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</td>
+                    <td><button class="btn btn-sm btn-outline-info" onclick="viewIncidentDetails('${incident._id || incident.id}')">View</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            document.getElementById('incidents-empty').classList.remove('d-none');
+        }
+        // Pagination
+        totalPages = data.total_pages || 1;
+        renderPagination();
+    } catch (error) {
+        document.getElementById('incidents-loading').classList.add('d-none');
+        document.getElementById('incidents-empty').classList.remove('d-none');
+        document.getElementById('incidents-empty').innerHTML = '<span class="text-danger">Please log in to view incidents.</span>';
+    }
 }
 
 function renderPagination() {

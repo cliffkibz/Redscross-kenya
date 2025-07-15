@@ -60,7 +60,7 @@ async function apiRequest(endpoint, options = {}) {
             }
             // If refresh failed, redirect to login
             clearTokens();
-            window.location.href = '/login';
+            window.location.href = '/api/auth/login';
             return;
         }
 
@@ -121,7 +121,7 @@ async function logout() {
         console.error('Logout error:', error);
     } finally {
         clearTokens();
-        window.location.href = '/login';
+        window.location.href = '/api/auth/login';
     }
 }
 
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Invalid token, redirect to login
                 clearTokens();
-                window.location.href = '/login';
+                window.location.href = '/api/auth/login';
             }
         });
     }

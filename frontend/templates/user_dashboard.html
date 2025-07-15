@@ -23,6 +23,47 @@
             </div>
         </div>
     </div>
+
+    <!-- Recent Incident Reports Table -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light text-danger">
+                    <h5 class="mb-0">Recent Incident Reports</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_reports and recent_reports|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in recent_reports %}
+                                <tr>
+                                    <td>{{ report.title }}</td>
+                                    <td>{{ report.incident_type }}</td>
+                                    <td>{{ report.severity|capitalize }}</td>
+                                    <td>{{ report.status|capitalize }}</td>
+                                    <td>{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else '' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="p-3 text-center text-muted">No recent incident reports found.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Floating Weather Chatbot Button and Window -->

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Incident Details - Admin{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Incident Details</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Title</dt>
+                        <dd class="col-sm-8">{{ incident.title }}</dd>
+                        <dt class="col-sm-4">Description</dt>
+                        <dd class="col-sm-8">{{ incident.description }}</dd>
+                        <dt class="col-sm-4">Type</dt>
+                        <dd class="col-sm-8">{{ incident.incident_type }}</dd>
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">{{ incident.status }}</dd>
+                        <dt class="col-sm-4">Severity</dt>
+                        <dd class="col-sm-8">{{ incident.severity }}</dd>
+                        <dt class="col-sm-4">Location</dt>
+                        <dd class="col-sm-8">
+                            {% if incident.location %}
+                                {% if incident.location.address %}
+                                    {{ incident.location.address }}<br>
+                                {% else %}
+                                    {{ incident.location }}<br>
+                                {% endif %}
+                                {% if incident.location.name %}
+                                    <strong>Name:</strong> {{ incident.location.name }}<br>
+                                {% endif %}
+                                {% if incident.location.email %}
+                                    <strong>Email:</strong> {{ incident.location.email }}<br>
+                                {% endif %}
+                                {% if incident.location.phone %}
+                                    <strong>Phone:</strong> {{ incident.location.phone }}<br>
+                                {% endif %}
+                            {% endif %}
+                        </dd>
+                        <dt class="col-sm-4">Reported By</dt>
+                        <dd class="col-sm-8">{{ reporter.username if reporter else 'Unknown' }}</dd>
+                        <dt class="col-sm-4">Created At</dt>
+                        <dd class="col-sm-8">{{ incident.created_at.strftime('%Y-%m-%d %H:%M') if incident.created_at else '' }}</dd>
+                        <dt class="col-sm-4">Photos</dt>
+                        <dd class="col-sm-8">
+                            {% if incident.photos and incident.photos|length > 0 %}
+                                {% for photo in incident.photos %}
+                                    <img src="/static/uploads/{{ photo }}" alt="Incident Photo" class="img-thumbnail mb-2" style="max-width: 200px;">
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No photos uploaded.</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                    <a href="{{ url_for('admin_update_incident', incident_id=incident._id) }}" class="btn btn-warning">Update</a>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Resources</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <a href="/" class="btn btn-link text-success mb-2" style="font-size: 1.25rem; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+                <div class="card shadow border-success">
+                    <div class="card-header bg-success text-white text-center">
+                        <h2 class="mb-0">Available Resources</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle" id="resources-table">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Resource Name</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resources-tbody">
+                                    <tr><td colspan="6" class="text-center">Loading resources...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-muted small mt-2">* Data is loaded live from the backend.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/resources/?per_page=50')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('resources-tbody');
+                tbody.innerHTML = '';
+                if (data.resources && data.resources.length > 0) {
+                    data.resources.forEach((resource, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <th scope="row">${idx + 1}</th>
+                            <td>${resource.name || ''}</td>
+                            <td>${resource.type || ''}</td>
+                            <td>${renderStatus(resource.status)}</td>
+                            <td>${resource.location || ''}</td>
+                            <td>${formatDate(resource.updated_at || resource.created_at)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No resources found.</td></tr>';
+                }
+            })
+            .catch(() => {
+                const tbody = document.getElementById('resources-tbody');
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load resources.</td></tr>';
+            });
+
+        function renderStatus(status) {
+            if (status === 'available') {
+                return '<span class="badge bg-success">Available</span>';
+            } else if (status === 'in_use') {
+                return '<span class="badge bg-danger">In Use</span>';
+            } else if (status === 'maintenance') {
+                return '<span class="badge bg-warning text-dark">Maintenance</span>';
+            } else {
+                return `<span class="badge bg-secondary">${status || 'Unknown'}</span>`;
+            }
+        }
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleString();
+        }
+    });
+    </script>
+</body>
+</html>

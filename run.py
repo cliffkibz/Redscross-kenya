@@ -84,20 +84,20 @@ def inject_globals():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-@app.route('/logout')
-def logout_web():
-    session.clear()
-    flash('you have been logged out.' , 'success')
-    return redirect(url_for('index'))
+    from backend.utils.db import get_db
+    db = get_db()
+    stats = {
+        'incident_count': db.incidents.count_documents({}),
+        'responder_count': db.users.count_documents({'role': 'responder', 'is_active': True}),
+        'resource_count': db.resources.count_documents({'status': 'available'})
+    }
+    return render_template('index.html', stats=stats)
 
 @app.route('/logout')
 def logout():
-    from flask import session, redirect, url_for, flash
-    session.clear()  # Clear session data if using session-based auth
+    session.clear()
     flash('You have been logged out.', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.login_page'))
 
 @app.route('/about')
 def about():
@@ -111,6 +111,89 @@ def contact():
 def privacy():
     return render_template('privacy.html')
 
+from werkzeug.utils import secure_filename
+from bson import ObjectId
+
+@app.route('/report_incident', methods=['GET', 'POST'])
+def report_incident():
+    from backend.models.incident import Incident
+    from backend.models.user import User
+    import os
+    from flask import current_app
+    user = getattr(g, 'current_user', None)
+    if not user:
+        return redirect(url_for('auth.login_page'))
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        files = request.files.getlist('photos') if 'photos' in request.files else []
+        # Accept the fields as provided by the form
+        required_fields = ['name', 'email', 'location', 'description']
+        if not all(field in data and data[field] for field in required_fields):
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('report_incident.html')
+        photo_paths = []
+        for file in files:
+            if file and '.' in file.filename:
+                filename = secure_filename(file.filename)
+                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                filename = f"{timestamp}_{filename}"
+                file_path = os.path.join('frontend/static/uploads', filename)
+                file.save(file_path)
+                photo_paths.append(filename)
+        # Use name as title, set incident_type to 'other' by default
+        location_dict = {
+            'address': data['location'],
+            'name': data.get('name', ''),
+            'email': data.get('email', ''),
+            'phone': data.get('phone', '')
+        }
+        incident = Incident(
+            title=data.get('name', 'Incident Report'),
+            description=data['description'],
+            incident_type='other',
+            location=location_dict,
+            reporter_id=user._id,
+            severity='medium',
+            photos=photo_paths
+        )
+        incident.save()
+        flash('Incident reported successfully!', 'success')
+        return redirect(url_for('user_dashboard'))
+    return render_template('report_incident.html')
+
+@app.route('/request_help', methods=['GET', 'POST'])
+def request_help():
+    from backend.utils.db import get_db
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        db = get_db()
+        help_request = {
+            'name': data.get('name', ''),
+            'email': data.get('email', ''),
+            'phone': data.get('phone', ''),
+            'location': data.get('location', ''),
+            'help_type': data.get('help_type', ''),
+            'details': data.get('details', ''),
+            'created_at': datetime.utcnow()
+        }
+        db.help_requests.insert_one(help_request)
+        flash('Help request submitted successfully!', 'success')
+        return redirect(url_for('index'))
+    return render_template('request_help.html')
+
+# Duplicate removed: handled by the POST+GET route above
+
+@app.route('/view_resources', methods=['GET'])
+def view_resources():
+    return render_template('view_resources.html')
+
+@app.route('/add_resource', methods=['GET'])
+def add_resource():
+    user = getattr(g, 'current_user', None)
+    if not user or not hasattr(user, 'role') or user.role != 'admin':
+        return "<h3 class='text-danger text-center mt-5'>Admin access required.</h3>", 403
+    return render_template('add_resource.html')
+
 @app.route('/dashboard', endpoint='user_dashboard')
 def user_dashboard():
     user = getattr(g, 'current_user', None)
@@ -118,7 +201,8 @@ def user_dashboard():
         return redirect(url_for('auth.login_page'))
     from backend.models.incident import Incident
     report_count = Incident.count_by_user(user._id)
-    return render_template('user_dashboard.html', current_user=user, report_count=report_count)
+    recent_reports = Incident.recent_by_user(user._id, limit=5)
+    return render_template('user_dashboard.html', current_user=user, report_count=report_count, recent_reports=recent_reports)
 
 # Admin Dashboard
 @app.route('/admin/dashboard', endpoint='admin_dashboard')
@@ -158,13 +242,91 @@ def admin_dashboard():
     for u in users:
         u['id'] = str(u['_id'])
 
+    # Help requests (limit 10)
+    help_requests = list(db.help_requests.find().sort('created_at', -1).limit(10))
+    for req in help_requests:
+        req['id'] = str(req['_id'])
+
     return render_template(
         'admin_dashboard.html',
         stats=stats,
         incidents=incidents,
         resources=resources,
-        users=users
+        users=users,
+        help_requests=help_requests
     )
+
+# Admin: View Incident Details
+@app.route('/admin/incidents/<incident_id>', methods=['GET'])
+def admin_view_incident(incident_id):
+    from backend.models.incident import Incident
+    from backend.models.user import User
+    from backend.utils.db import get_db
+    db = get_db()
+    incident = db.incidents.find_one({'_id': ObjectId(incident_id)})
+    if not incident:
+        flash('Incident not found.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+    reporter = db.users.find_one({'_id': incident['reporter_id']})
+    return render_template('admin_incident_detail.html', incident=incident, reporter=reporter)
+
+# Admin: Update Incident
+@app.route('/admin/incidents/<incident_id>/update', methods=['GET', 'POST'])
+def admin_update_incident(incident_id):
+    from backend.models.incident import Incident
+    from backend.utils.db import get_db
+    db = get_db()
+    incident = db.incidents.find_one({'_id': ObjectId(incident_id)})
+    if not incident:
+        flash('Incident not found.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+    if request.method == 'POST':
+        update_fields = {}
+        for field in ['status', 'severity', 'description']:
+            if field in request.form:
+                update_fields[field] = request.form[field]
+        if update_fields:
+            db.incidents.update_one({'_id': ObjectId(incident_id)}, {'$set': update_fields})
+            flash('Incident updated successfully.', 'success')
+            return redirect(url_for('admin_dashboard'))
+    return render_template('admin_incident_update.html', incident=incident)
+
+# Admin: Delete Incident
+@app.route('/admin/incidents/<incident_id>/delete', methods=['POST'])
+def admin_delete_incident(incident_id):
+    from backend.utils.db import get_db
+    db = get_db()
+    db.incidents.delete_one({'_id': ObjectId(incident_id)})
+    flash('Incident deleted successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+# Incidents page (public)
+@app.route('/incidents')
+def incidents_page():
+    return render_template('incidents.html')
+
+import requests
+
+# News API endpoint for disaster news
+@app.route('/api/disaster_news')
+def disaster_news():
+    NEWS_API_KEY = os.getenv('NEWS_API_KEY')
+    keywords = 'flood OR fire OR earthquake OR landslide OR storm OR disaster'
+    url = f'https://newsapi.org/v2/everything?q={keywords}&sortBy=publishedAt&language=en&pageSize=10&apiKey={NEWS_API_KEY}'
+    try:
+        resp = requests.get(url)
+        data = resp.json()
+        articles = [
+            {
+                'title': a['title'],
+                'description': a['description'],
+                'url': a['url']
+            }
+            for a in data.get('articles', []) if a.get('description')
+        ]
+        return {'articles': articles}
+    except Exception as e:
+        return {'articles': [], 'error': str(e)}, 500
 
 # Error handlers
 @app.errorhandler(404)

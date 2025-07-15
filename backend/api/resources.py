@@ -16,49 +16,65 @@ def create_resource():
         return jsonify({'error': 'Unauthorized'}), 403
     
     data = request.get_json()
-    required_fields = ['name', 'type', 'description', 'location', 'capacity', 'specifications']
+    required_fields = ['name', 'resource_type', 'description', 'location', 'capacity', 'specifications']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
     
     try:
         resource = Resource(
             name=data['name'],
-            type=data['type'],
-            description=data['description'],
-            status='available',
+            resource_type=data['resource_type'],
             location=data['location'],
+            status='available',
             capacity=data['capacity'],
-            specifications=data['specifications']
+            description=data['description']
         )
+        # Optionally set specifications if your model supports it
+        if hasattr(resource, 'specifications'):
+            resource.specifications = data['specifications']
         resource.save()
         return jsonify(resource.to_dict()), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 @resources_bp.route('/', methods=['GET'])
-@jwt_required()
 def get_resources():
-    """Get a list of resources with optional filtering"""
-    current_user = User.get_by_id(get_jwt_identity())
-    if not current_user:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
+    """Get a list of resources with optional filtering (public access)"""
+    from backend.utils.db import get_db
+    db = get_db()
     # Get query parameters
     resource_type = request.args.get('type')
     status = request.args.get('status')
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 10))
     
-    # Build query
+    # Build query (map to MongoDB field names)
     query = {}
     if resource_type:
-        query['type'] = resource_type
+        query['resource_type'] = resource_type
     if status:
         query['status'] = status
     
     # Get resources with pagination
-    resources = Resource.objects(**query).skip((page - 1) * per_page).limit(per_page)
-    total = Resource.objects(**query).count()
+    cursor = db.resources.find(query).skip((page - 1) * per_page).limit(per_page)
+    resources = []
+    for resource_data in cursor:
+        resource = Resource(
+            name=resource_data['name'],
+            resource_type=resource_data['resource_type'],
+            location=resource_data['location'],
+            status=resource_data['status'],
+            capacity=resource_data.get('capacity'),
+            description=resource_data.get('description'),
+            current_incident=resource_data.get('current_incident')
+        )
+        resource._id = resource_data['_id']
+        resource.created_at = resource_data['created_at']
+        resource.updated_at = resource_data['updated_at']
+        resource.maintenance_history = resource_data.get('maintenance_history', [])
+        resource.usage_history = resource_data.get('usage_history', [])
+        resources.append(resource)
+    total = db.resources.count_documents(query)
     
     return jsonify({
         'resources': [resource.to_dict() for resource in resources],
@@ -95,7 +111,7 @@ def update_resource(resource_id):
         return jsonify({'error': 'Resource not found'}), 404
     
     data = request.get_json()
-    allowed_fields = ['name', 'type', 'description', 'status', 'location', 'capacity', 'specifications']
+    allowed_fields = ['name', 'resource_type', 'description', 'status', 'location', 'capacity', 'specifications']
     
     for field in allowed_fields:
         if field in data:

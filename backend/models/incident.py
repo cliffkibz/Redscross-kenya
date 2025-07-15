@@ -53,6 +53,24 @@ class Incident:
     def count_by_user(user_id):
         db = get_db()
         return db.incidents.count_documents({'reporter_id': user_id})
+
+    @staticmethod
+    def recent_by_user(user_id, limit=5):
+        db = get_db()
+        incidents = db.incidents.find({'reporter_id': user_id}).sort('created_at', -1).limit(limit)
+        return [
+            {
+                'id': str(inc['_id']),
+                'title': inc.get('title', ''),
+                'description': inc.get('description', ''),
+                'incident_type': inc.get('incident_type', ''),
+                'location': inc.get('location', {}),
+                'severity': inc.get('severity', ''),
+                'status': inc.get('status', ''),
+                'created_at': inc.get('created_at'),
+            }
+            for inc in incidents
+        ]
     
     def save(self):
         db = get_db()
