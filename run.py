@@ -300,8 +300,26 @@ def admin_delete_incident(incident_id):
     flash('Incident deleted successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
+# Donations page
+@app.route('/donate', methods=['GET', 'POST'])
+def donate():
+    if request.method == 'POST':
+        # Here you could save the donation info to a database or send an email/trigger payment
+        flash('Thank you for your donation and support!', 'success')
+        return redirect(url_for('donate'))
+    return render_template('donate.html')
+
+# Become a Volunteer page
+@app.route('/become_volunteer', methods=['GET', 'POST'])
+def become_volunteer():
+    if request.method == 'POST':
+        # Here you could save the form data to a database or send an email
+        flash('Thank you for your application! We will contact you soon.', 'success')
+        return redirect(url_for('become_volunteer'))
+    return render_template('become_volunteer.html')
+
 # Incidents page (public)
-@app.route('/incidents')
+@app.route('/incidents/')
 def incidents_page():
     return render_template('incidents.html')
 
@@ -310,23 +328,30 @@ import requests
 # News API endpoint for disaster news
 @app.route('/api/disaster_news')
 def disaster_news():
-    NEWS_API_KEY = os.getenv('NEWS_API_KEY')
-    keywords = 'flood OR fire OR earthquake OR landslide OR storm OR disaster'
-    url = f'https://newsapi.org/v2/everything?q={keywords}&sortBy=publishedAt&language=en&pageSize=10&apiKey={NEWS_API_KEY}'
-    try:
-        resp = requests.get(url)
-        data = resp.json()
-        articles = [
-            {
-                'title': a['title'],
-                'description': a['description'],
-                'url': a['url']
-            }
-            for a in data.get('articles', []) if a.get('description')
-        ]
-        return {'articles': articles}
-    except Exception as e:
-        return {'articles': [], 'error': str(e)}, 500
+    from backend.utils.db import get_db
+    from datetime import datetime, timedelta
+    db = get_db()
+    # Get news from the last 30 days
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    # Query for news with coordinates and disaster_event
+    news_cursor = db['disaster_info'].find({
+        'timestamp': {'$gte': thirty_days_ago},
+        'Latitude': {'$ne': None},
+        'Longitude': {'$ne': None},
+        'disaster_event': {'$ne': None}
+    }).sort('timestamp', -1)
+    articles = []
+    for a in news_cursor:
+        articles.append({
+            'title': a.get('title'),
+            'description': a.get('title'),
+            'url': a.get('url'),
+            'latitude': a.get('Latitude'),
+            'longitude': a.get('Longitude'),
+            'disaster_event': a.get('disaster_event'),
+            'timestamp': a.get('timestamp')
+        })
+    return {'articles': articles}
 
 # Error handlers
 @app.errorhandler(404)

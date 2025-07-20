@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}My Dashboard - Red Cross Kenya{% endblock %}
 {% block content %}
-<div class="container py-5">
+<div class="container py-5" style="background-image: url('/static/logo/hero.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.9); z-index: 1;"></div>
+    <div style="position: relative; z-index: 2;">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-lg">
@@ -13,18 +15,15 @@
                         <h4>You have reported <span class="text-danger">{{ report_count }}</span> incident(s).</h4>
                     </div>
                     <div class="d-flex justify-content-center gap-3 mb-4">
-                        <a href="#" class="btn btn-success btn-lg">Become a Volunteer</a>
-                        <a href="#" class="btn btn-warning btn-lg">Donate</a>
-                    </div>
-                    <div class="text-center">
-                        <a href="{{ url_for('incidents.get_incidents') }}" class="btn btn-outline-danger">View My Reports</a>
+                        <a href="/become_volunteer" class="btn btn-success btn-lg">Become a Volunteer</a>
+                        <a href="/donate" class="btn btn-warning btn-lg">Donate</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Incident Reports Table -->
+
     <div class="row justify-content-center mt-4">
         <div class="col-md-10">
             <div class="card shadow-sm">
@@ -64,35 +63,39 @@
             </div>
         </div>
     </div>
+    </div>
 </div>
 
-<!-- Floating Weather Chatbot Button and Window -->
+
 <style>
 #chatbot-fab {
     position: fixed;
     bottom: 30px;
-    left: 30px;
+    right: 30px;
     width: 60px;
     height: 60px;
-    background: #17a2b8;
+    background: #dc3545;
     color: #fff;
     border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     cursor: pointer;
     z-index: 9999;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    border: none;
 }
 #chatbot-fab:hover {
-    background: #138496;
+    background: #c82333;
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.6);
+    transform: translateY(-2px);
 }
 #chatbot-window {
     position: fixed;
     bottom: 100px;
-    left: 30px;
+    right: 30px;
     width: 320px;
     max-width: 90vw;
     background: #fff;
@@ -106,7 +109,7 @@
     display: flex;
 }
 #chatbot-header {
-    background: #17a2b8;
+    background: #dc3545;
     color: #fff;
     padding: 12px;
     border-top-left-radius: 12px;
@@ -142,6 +145,20 @@
     padding: 6px 12px;
     margin-right: 8px;
 }
+#chatbot-form button {
+    background: #dc3545;
+    border: none;
+    color: white;
+    border-radius: 20px;
+    padding: 6px 12px;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+    transition: all 0.2s ease;
+}
+#chatbot-form button:hover {
+    background: #c82333;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.5);
+    transform: translateY(-1px);
+}
 </style>
 
 <div id="chatbot-fab" title="Ask about the weather">
@@ -155,12 +172,12 @@
     <div id="chatbot-messages"></div>
     <form id="chatbot-form">
         <input type="text" id="chatbot-input" placeholder="Ask about the weather..." autocomplete="off" required />
-        <button type="submit" class="btn btn-info btn-sm ms-2">Send</button>
+        <button type="submit">Send</button>
     </form>
 </div>
 
 <script>
-// Floating chatbot logic
+
 const fab = document.getElementById('chatbot-fab');
 const windowEl = document.getElementById('chatbot-window');
 const closeBtn = document.getElementById('chatbot-close');
@@ -202,5 +219,25 @@ form.addEventListener('submit', async (e) => {
         appendMessage('bot', 'Sorry, there was an error contacting the chatbot.');
     }
 });
+// Send Test Alert button logic
+const sendTestAlertBtn = document.getElementById('send-test-alert');
+if (sendTestAlertBtn) {
+    sendTestAlertBtn.addEventListener('click', async () => {
+        sendTestAlertBtn.disabled = true;
+        sendTestAlertBtn.textContent = 'Sending...';
+        try {
+            const res = await fetch('/api/send_test_alert', { method: 'POST' });
+            if (res.ok) {
+                alert('Test alert sent successfully!');
+            } else {
+                alert('Failed to send test alert.');
+            }
+        } catch (err) {
+            alert('Error sending test alert.');
+        }
+        sendTestAlertBtn.disabled = false;
+        sendTestAlertBtn.textContent = 'Send Test Alert';
+    });
+}
 </script>
 {% endblock %}

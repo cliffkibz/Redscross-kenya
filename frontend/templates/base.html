@@ -47,7 +47,7 @@
                     </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('incidents.get_incidents') }}">
+                            <a class="nav-link" href="/incidents/">
                                 <i class='bx bxs-report'></i> Incidents
                             </a>
                         </li>
@@ -90,7 +90,7 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+
     {% set bootstrap_alerts = {
         'success': 'success',
         'info': 'info',
@@ -111,12 +111,12 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Main Content -->
+
     <main class="container py-4">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container">
             <div class="row">
@@ -151,14 +151,14 @@
         </div>
     </footer>
 
-    <!-- Loading Spinner -->
+
     <div id="loading-spinner" class="d-none">
         <div class="spinner-border text-danger" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
-    <!-- Toast Container -->
+
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     {% block scripts %}{% endblock %}

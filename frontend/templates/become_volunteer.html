@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Become a Volunteer - Kenya Red Cross{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <h2 class="mb-0">Become a Volunteer</h2>
+                </div>
+                <div class="card-body p-5">
+                    <h4 class="text-danger mb-3">Volunteerism at <br>Kenya Red Cross Society</h4>
+                    <p>As an organization that prioritizes serving others, the Kenya Red Cross is constantly looking for individuals who share the same values and beliefs. One of the most important traits of a volunteer at the Kenya Red Cross is being selfless and having no desire to gain anything from their actions.</p>
+                    <p>As a volunteer, individuals are expected to support the humanitarian work of the organization and contribute towards improving the lives of those in need. By sacrificing their time, skills, and resources, volunteers at the Kenya Red Cross actively demonstrate a dedication to serving others and making a positive impact on their community. In essence, being a volunteer at the Kenya Red Cross is not just a task or a title, it is an opportunity to give back, inspire change, and make a difference in the world.</p>
+                    <hr>
+                    <h5 class="mb-3">Why Volunteer with Us?</h5>
+                    <ul>
+                        <li>Make a real difference in your community and beyond</li>
+                        <li>Gain valuable skills and experience</li>
+                        <li>Meet like-minded, passionate people</li>
+                        <li>Be part of a respected humanitarian organization</li>
+                        <li>Receive training and support</li>
+                    </ul>
+                    <hr>
+                    <h5 class="mb-3">How to Become a Volunteer</h5>
+                    <ol>
+                        <li>Fill out the application form below</li>
+                        <li>Attend an orientation session</li>
+                        <li>Get matched to a volunteer opportunity</li>
+                        <li>Start making a difference!</li>
+                    </ol>
+                    <hr>
+                    <h5 class="mb-3">Volunteer Application Form</h5>
+                    <form method="post" action="/become_volunteer">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="skills" class="form-label">Skills/Interests</label>
+                            <input type="text" class="form-control" id="skills" name="skills" placeholder="e.g. First Aid, Logistics, Community Outreach">
+                        </div>
+                        <div class="mb-3">
+                            <label for="motivation" class="form-label">Why do you want to volunteer with us?</label>
+                            <textarea class="form-control" id="motivation" name="motivation" rows="3" required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg">Submit Application</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <p class="text-center text-muted mt-4">Thank you for your interest in volunteering with the Kenya Red Cross Society!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

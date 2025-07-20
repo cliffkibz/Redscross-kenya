@@ -17,4 +17,4 @@ geopy==2.4.0
 PyJWT==2.8.0
 cryptography==41.0.3
 python-multipart==0.0.6
-validators==0.22.0 
+validators==0.22.0

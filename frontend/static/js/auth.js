@@ -1,7 +1,7 @@
-// Authentication and User Management
+
 const API_BASE_URL = '/api';
 
-// Token Management
+
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 
@@ -25,7 +25,6 @@ function clearTokens() {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-// API Request Helper
 async function apiRequest(endpoint, options = {}) {
     const token = getToken();
     const headers = {
@@ -76,7 +75,7 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// Authentication Functions
+
 async function login(username, password) {
     try {
         const data = await apiRequest('/auth/login', {
@@ -134,12 +133,11 @@ async function getCurrentUser() {
     }
 }
 
-// Form Handling
+
 function handleLogin(event) {
     event.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
     showLoading();
     login(username, password)
         .catch(error => console.error('Login error:', error))
@@ -162,7 +160,7 @@ function handleRegister(event) {
         .finally(hideLoading);
 }
 
-// UI Helpers
+
 function showLoading() {
     document.getElementById('loading-spinner').classList.remove('d-none');
 }
@@ -197,7 +195,7 @@ function showToast(type, message) {
     });
 }
 
-// Event Listeners
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
@@ -217,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Check authentication status
+
     const token = getToken();
     if (token) {
         getCurrentUser().then(user => {

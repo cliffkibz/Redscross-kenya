@@ -1,6 +1,6 @@
 // Alerts and Notifications Management
 
-// Send Test Alert
+// SendTest
 async function sendTestAlert(phoneNumber) {
     try {
         showLoading();
@@ -18,7 +18,7 @@ async function sendTestAlert(phoneNumber) {
     }
 }
 
-// Notify Incident Update
+// Notify
 async function notifyIncidentUpdate(incidentId, notificationType, details = null) {
     try {
         showLoading();
@@ -39,7 +39,7 @@ async function notifyIncidentUpdate(incidentId, notificationType, details = null
     }
 }
 
-// Notify Responders
+// NotifyResponders
 async function notifyResponders(incidentId) {
     try {
         showLoading();
@@ -56,7 +56,7 @@ async function notifyResponders(incidentId) {
     }
 }
 
-// Notify Resource Assignment
+// NotifyResource
 async function notifyResourceAssignment(resourceId) {
     try {
         showLoading();
@@ -73,7 +73,7 @@ async function notifyResourceAssignment(resourceId) {
     }
 }
 
-// Get Alert Settings
+
 async function getAlertSettings() {
     try {
         showLoading();
@@ -88,7 +88,7 @@ async function getAlertSettings() {
     }
 }
 
-// Update Alert Settings
+
 async function updateAlertSettings(settings) {
     try {
         showLoading();
@@ -108,7 +108,7 @@ async function updateAlertSettings(settings) {
     }
 }
 
-// UI Helpers
+
 function createAlertSettingsForm(settings) {
     return `
         <form id="alert-settings-form" class="alert-settings-form">
@@ -199,7 +199,7 @@ function createAlertSettingsForm(settings) {
     `;
 }
 
-// Form Handlers
+
 function handleAlertSettingsSubmit(event) {
     event.preventDefault();
     const settings = {
@@ -229,7 +229,7 @@ function handleTestAlertSubmit(event) {
     sendTestAlert(phoneNumber);
 }
 
-// Load Settings
+
 async function loadAlertSettings() {
     try {
         const settings = await getAlertSettings();
@@ -248,7 +248,7 @@ async function loadAlertSettings() {
     }
 }
 
-// Event Listeners
+
 document.addEventListener('DOMContentLoaded', () => {
     // Load alert settings if on settings page
     const settingsContainer = document.getElementById('alert-settings');
@@ -256,13 +256,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAlertSettings();
     }
     
-    // Test alert form handler
+
     const testAlertForm = document.getElementById('test-alert-form');
     if (testAlertForm) {
         testAlertForm.addEventListener('submit', handleTestAlertSubmit);
     }
     
-    // Incident notification handlers
+
     const notifyStatusBtn = document.getElementById('notify-status-btn');
     if (notifyStatusBtn) {
         notifyStatusBtn.addEventListener('click', () => {
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Resource notification handler
+
     const notifyResourceBtn = document.getElementById('notify-resource-btn');
     if (notifyResourceBtn) {
         notifyResourceBtn.addEventListener('click', () => {

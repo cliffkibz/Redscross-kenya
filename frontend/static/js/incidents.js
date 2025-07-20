@@ -1,4 +1,4 @@
-// Incident Management
+
 let map;
 let incidentMarkers = {};
 let currentIncident = null;

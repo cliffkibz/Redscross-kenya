@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% block content %}
-<!-- Background Slideshow -->
+
 <style>
 #bg-slideshow {
     position: fixed;
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="bg-slideshow"></div>
 <div id="main-content">
 <div class="container mt-5">
-    <!-- Hero Section -->
+
     <div class="row align-items-center mb-5">
         <div class="col-md-7 text-center text-md-start">
             <h1 class="display-4 fw-bold text-danger mb-3">
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Live Alerts / Recent Incidents -->
+
     <div class="row mb-5">
         <div class="col-12">
             <div class="card border-danger shadow-sm">
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Statistics Section -->
+
     <div class="row mb-5 text-center">
         <div class="col-md-4 mb-3">
             <div class="card border-danger h-100">
@@ -170,7 +170,24 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Preparedness Tips -->
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Disaster Management &amp; Risk Management at Kenya Red Cross</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-danger">Disaster Management Operations (DM-Op)</h6>
+                    <p>The Disaster Management Operations (DM-Op) department provides immediate relief to affected populations to save lives, protect livelihoods, and strengthen recovery from disasters and crises. The department’s key activities are in Emergency operations, Tracing and Restoration of Family links, Refugee Operations in Dadaab and Kalobeyei, protected relief and Recovery Operations, as well as Disaster Management strengthening.</p>
+                    <h6 class="text-danger">Disaster Risk Management (DRM)</h6>
+                    <p>The Disaster Risk Management (DRM) department is the organization’s flagship for resilience building. It implements programmes that aim to lessen or transfer the adverse effects of hazards through preparedness, mitigation and response. The focus is on three thematic areas; Disaster Risk Reduction (DRR), Food Security and Livelihood (FS&amp;L) and environmental management and climate change adaptation (E/CCA)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="row mb-5">
         <div class="col-12">
             <div class="card border-info">
@@ -189,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Call to Action -->
+
     <div class="row mb-5">
         <div class="col-12 text-center">
             <a href="{{ url_for('auth.login') }}" class="btn btn-lg btn-danger me-2">Login</a>

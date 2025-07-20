@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Donate - Kenya Red Cross{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-warning text-white text-center py-4">
+                    <h2 class="mb-0">Support Our Mission</h2>
+                </div>
+                <div class="card-body p-5">
+                    <h4 class="text-warning mb-3">Donate to Kenya Red Cross Society</h4>
+                    <p>Your donation helps us provide life-saving relief, support vulnerable communities, and respond to disasters across Kenya. Every contribution, big or small, makes a difference.</p>
+                    <hr>
+                    <h5 class="mb-3">How Your Donation Helps</h5>
+                    <ul>
+                        <li>Provides emergency food, water, and shelter to disaster victims</li>
+                        <li>Supports health and first aid services</li>
+                        <li>Funds disaster preparedness and risk reduction programs</li>
+                        <li>Helps reunite families and restore hope</li>
+                    </ul>
+                    <hr>
+                    <h5 class="mb-3">Make a Donation</h5>
+                    <form method="post" action="/donate">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Donation Amount (KES)</label>
+                            <input type="number" class="form-control" id="amount" name="amount" min="100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="method" class="form-label">Payment Method</label>
+                            <select class="form-select" id="method" name="method" required>
+                                <option value="">Select...</option>
+                                <option value="mpesa">M-Pesa</option>
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="bank">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message (optional)</label>
+                            <textarea class="form-control" id="message" name="message" rows="2"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg text-white">Donate Now</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <p class="text-center text-muted mt-4">Thank you for your generosity and support!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

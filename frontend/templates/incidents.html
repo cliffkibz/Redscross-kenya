@@ -2,29 +2,39 @@
 {% block title %}All Incidents - Red Cross Kenya{% endblock %}
 {% block content %}
 <div class="container py-5">
-    <!-- Live Alerts Section -->
+    <!-- Live Alerts and Map Section -->
     <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-warning shadow-sm mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="card border-warning shadow-sm h-100">
                 <div class="card-header bg-warning text-white">
                     <i class="fas fa-bolt"></i> Live Alerts (Disaster News)
                 </div>
-                <div class="card-body p-2">
-                    <marquee id="news-marquee" behavior="scroll" direction="left" scrollamount="6" style="font-size:1.1rem;">
-                        Loading live alerts...
-                    </marquee>
+                <div class="card-body p-2" style="height: 400px; overflow: hidden;">
+                    <div id="news-vertical-scroll" style="height: 100%; overflow: hidden; position: relative;">
+                        <ul id="news-list" class="list-unstyled mb-0" style="position: absolute; width: 100%; top: 0;">
+                            <li>Loading live alerts...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">Affected Areas Map</div>
+                <div class="card-body p-0">
+                    <div id="map" style="height: 400px; width: 100%;"></div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Hero Section -->
+
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="text-danger">Incident Management</h2>
             <p class="lead">View, filter, and manage all reported disaster incidents. Use the filters below to find specific incidents by type, status, or severity. Click on an incident to view more details or take action.</p>
         </div>
     </div>
-    <!-- Filters -->
+
     <div class="row mb-3">
         <div class="col-md-3 mb-2">
             <input type="text" class="form-control" id="filter-title" placeholder="Search by title...">
@@ -56,13 +66,13 @@
             </select>
         </div>
     </div>
-    <!-- Add Incident Button -->
+
     <div class="row mb-3">
         <div class="col-12 d-flex justify-content-end">
             <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addIncidentModal"><i class="fas fa-plus"></i> Add Incident</a>
         </div>
     </div>
-    <!-- Map Section -->
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -73,7 +83,7 @@
             </div>
         </div>
     </div>
-    <!-- Incidents Table -->
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -106,7 +116,7 @@
             </div>
         </div>
     </div>
-    <!-- Pagination -->
+
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-center">
             <nav>
@@ -116,7 +126,7 @@
             </nav>
         </div>
     </div>
-    <!-- Add Incident Modal -->
+
     <div class="modal fade" id="addIncidentModal" tabindex="-1" aria-labelledby="addIncidentModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -160,7 +170,7 @@
             </div>
         </div>
     </div>
-    <!-- Incident Details Modal -->
+
     <div class="modal fade" id="incidentDetailsModal" tabindex="-1" aria-labelledby="incidentDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -178,9 +188,9 @@
 {% endblock %}
 {% block scripts %}
 <!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2H1LG2Q6F2zjG1rjQbQ+1rQ6U1p5l1lLxA0hBOk=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6Gk6h+g1kQ+1rQ6U1p5l1lLxA0hBOk=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 // Initialize the map
 let map = L.map('map').setView([0.0236, 37.9062], 6); // Centered on Kenya
@@ -206,15 +216,55 @@ async function loadIncidentLocations() {
     }
 }
 loadIncidentLocations();
-</script>
+
+// Vertical auto-scroll
+let scrollPos = 0;
+let scrollInterval;
+const scrollSpeed = 30; // ms per pixel
+const newsList = document.getElementById('news-list');
+const newsContainer = document.getElementById('news-vertical-scroll');
+function startNewsScroll() {
+    if (!newsList) return;
+    scrollInterval = setInterval(() => {
+        scrollPos++;
+        if (newsList.offsetHeight - newsContainer.offsetHeight - scrollPos < 1) {
+            scrollPos = 0;
+        }
+        newsList.style.top = -scrollPos + 'px';
+    }, scrollSpeed);
+}
+function stopNewsScroll() {
+    clearInterval(scrollInterval);
+}
+if (newsContainer) {
+    newsContainer.addEventListener('mouseenter', stopNewsScroll);
+    newsContainer.addEventListener('mouseleave', startNewsScroll);
+}
+// Fetch and render news
+fetch('/api/disaster_news')
+    .then(res => res.json())
+    .then(data => {
+        if (data.articles && data.articles.length > 0) {
+            newsList.innerHTML = data.articles.map(a =>
+                `<li style="margin-bottom: 1.2em;"><a href="${a.url}" target="_blank" style="text-decoration:underline;">${a.description}</a></li>`
+            ).join('');
+        } else {
+            newsList.innerHTML = '<li>No live alerts found.</li>';
+        }
+        scrollPos = 0;
+        newsList.style.top = '0px';
+        startNewsScroll();
+    })
+    .catch(() => {
+        newsList.innerHTML = '<li>Error loading live alerts.</li>';
+    });
+
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {};
-
 function getToken() {
     return localStorage.getItem('auth_token');
 }
-
 async function loadIncidents(page = 1) {
     currentPage = page;
     const title = document.getElementById('filter-title').value;
@@ -241,7 +291,7 @@ async function loadIncidents(page = 1) {
                     <td>${incident.incident_type}</td>
                     <td>${incident.status || ''}</td>
                     <td>${incident.severity || ''}</td>
-                    <td>${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</td>
+                    <td>${incident.location && incident.location.county ? incident.location.county : (incident.location.address || incident.location || '')}</td>
                     <td>${incident.reporter_id || ''}</td>
                     <td>${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</td>
                     <td><button class="btn btn-sm btn-outline-info" onclick="viewIncidentDetails('${incident._id || incident.id}')">View</button></td>
@@ -260,7 +310,6 @@ async function loadIncidents(page = 1) {
         document.getElementById('incidents-empty').innerHTML = '<span class="text-danger">Please log in to view incidents.</span>';
     }
 }
-
 function renderPagination() {
     const pagination = document.getElementById('incidents-pagination');
     pagination.innerHTML = '';
@@ -275,7 +324,6 @@ function renderPagination() {
         pagination.appendChild(li);
     }
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     loadIncidents();
     document.getElementById('add-incident-form').addEventListener('submit', function(e) {
@@ -302,7 +350,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('filter-severity').addEventListener('change', () => loadIncidents(1));
 });
 
-// View Incident Details
 function viewIncidentDetails(incidentId) {
     const token = getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -315,7 +362,7 @@ function viewIncidentDetails(incidentId) {
                 <p><strong>Type:</strong> ${incident.incident_type}</p>
                 <p><strong>Status:</strong> ${incident.status || ''}</p>
                 <p><strong>Severity:</strong> ${incident.severity || ''}</p>
-                <p><strong>Location:</strong> ${incident.location && incident.location.county ? incident.location.county : (incident.location || '')}</p>
+                <p><strong>Location:</strong> ${incident.location && incident.location.county ? incident.location.county : (incident.location.address || incident.location || '')}</p>
                 <p><strong>Description:</strong> ${incident.description || ''}</p>
                 <p><strong>Reported By:</strong> ${incident.reporter_id || ''}</p>
                 <p><strong>Date:</strong> ${incident.created_at ? new Date(incident.created_at).toLocaleString() : ''}</p>
