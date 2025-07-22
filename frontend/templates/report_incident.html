@@ -22,6 +22,10 @@
                     <div class="card-body">
                         <form action="/report_incident" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
+                                <label for="title" class="form-label">Incident Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="mb-3">
                                 <label for="name" class="form-label">Your Name</label>
                                 <input type="text" class="form-control" id="name" name="name" required>
                             </div>
@@ -42,8 +46,46 @@
                                 <input type="date" class="form-control" id="date" name="date" required>
                             </div>
                             <div class="mb-3">
+                                <label for="incident_type" class="form-label">Type of Disaster</label>
+                                <select class="form-select" id="incident_type" name="incident_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="4653">Cold Wave</option>
+                                    <option value="41764">Complex Emergency</option>
+                                    <option value="4672">Drought</option>
+                                    <option value="4628">Earthquake</option>
+                                    <option value="4642">Epidemic</option>
+                                    <option value="4719">Extratropical Cyclone</option>
+                                    <option value="5706">Fire</option>
+                                    <option value="4624">Flash Flood</option>
+                                    <option value="4611">Flood</option>
+                                    <option value="4930">Heat Wave</option>
+                                    <option value="5255">Insect Infestation</option>
+                                    <option value="4728">Land Slide</option>
+                                    <option value="4814">Mud Slide</option>
+                                    <option value="5042">Other</option>
+                                    <option value="4656">Severe Local Storm</option>
+                                    <option value="4764">Snow Avalanche</option>
+                                    <option value="5549">Storm Surge</option>
+                                    <option value="4620">Technological Disaster</option>
+                                    <option value="4618">Tropical Cyclone</option>
+                                    <option value="4687">Tsunami</option>
+                                    <option value="4615">Volcano</option>
+                                    <option value="4648">Wild Fire</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
                                 <label for="description" class="form-label">Incident Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="severity" class="form-label">Severity</label>
+                                <select class="form-select" id="severity" name="severity" required>
+                                    <option value="">Select severity...</option>
+                                    <option value="low">Low - Minor incident, no immediate danger</option>
+                                    <option value="medium">Medium - Moderate impact, needs attention</option>
+                                    <option value="high">High - Serious, urgent response needed</option>
+                                    <option value="critical">Critical - Life-threatening, immediate action required</option>
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="evidence" class="form-label">Upload Evidence (optional)</label>

@@ -1,14 +1,9 @@
 {% extends "base.html" %}
-
 {% block title %}Home - Red Cross Kenya{% endblock %}
-
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
     const bgImages = [
-        
-
         '/static/logo/req.jpg',
         '/static/logo/vol.jpg',
         '/static/logo/Careers.png',
@@ -23,8 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(() => {
         bgIndex = (bgIndex + 1) % bgImages.length;
         setBgImage(bgIndex);
-    }, 5000); 
-
+    }, 5000);
     function getToken() {
         return localStorage.getItem('auth_token');
     }
@@ -52,10 +46,40 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else if (incident.incident_type && incident.incident_type.toLowerCase().includes('accident')) {
                             icon = '<i class="fas fa-car-crash text-primary"></i>';
                         }
-                        const location = incident.location && incident.location.county ? incident.location.county : 'Unknown';
+                        const location = incident.location ? incident.location : 'Unknown';
                         const time = new Date(incident.created_at).toLocaleString();
+
+                        let severityLabel = '';
+                        let severityDesc = '';
+                        let severityClass = '';
+                        switch ((incident.severity || '').toLowerCase()) {
+                            case 'critical':
+                                severityLabel = 'Critical';
+                                severityDesc = 'Life-threatening, immediate action required';
+                                severityClass = 'bg-danger';
+                                break;
+                            case 'high':
+                                severityLabel = 'High';
+                                severityDesc = 'Serious, urgent response needed';
+                                severityClass = 'bg-warning text-dark';
+                                break;
+                            case 'medium':
+                                severityLabel = 'Medium';
+                                severityDesc = 'Moderate impact, needs attention';
+                                severityClass = 'bg-info text-dark';
+                                break;
+                            case 'low':
+                                severityLabel = 'Low';
+                                severityDesc = 'Minor incident, no immediate danger';
+                                severityClass = 'bg-secondary';
+                                break;
+                            default:
+                                severityLabel = 'Unknown';
+                                severityDesc = '';
+                                severityClass = 'bg-light text-dark';
+                        }
                         const li = document.createElement('li');
-                        li.innerHTML = `${icon} <strong>${incident.title}</strong> in ${location}. <span class="text-muted">${time}</span>`;
+                        li.innerHTML = `${icon} <strong>${incident.title}</strong> in ${location}. <span class="badge ${severityClass} ms-2">${severityLabel}</span> <span class="text-muted">${time}</span><br><small class="text-muted">${severityDesc}</small>`;
                         alertsList.appendChild(li);
                     });
                 } else {
@@ -119,8 +143,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <img src="{{ url_for('static', filename='logo/respo.png') }}" alt="Disaster Response" class="img-fluid" style="max-height: 260px;">
         </div>
     </div>
-
-
     <div class="row mb-5">
         <div class="col-12">
             <div class="card border-danger shadow-sm">
@@ -137,8 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-
-
     <div class="row mb-5 text-center">
         <div class="col-md-4 mb-3">
             <div class="card border-danger h-100">
@@ -168,8 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-
-
     <div class="row mb-5">
         <div class="col-12">
             <div class="card border-danger">

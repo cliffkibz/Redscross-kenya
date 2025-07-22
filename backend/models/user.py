@@ -8,7 +8,7 @@ class User:
     def __init__(self, username, email, password, role='public', phone=None):
         self.username = username
         self.email = email
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
         self.role = role if role in self.ROLES else 'public'
         self.phone = phone
         self.created_at = datetime.utcnow()

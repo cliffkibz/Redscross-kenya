@@ -49,7 +49,7 @@ def create_incident():
             title=data['title'],
             description=data['description'],
             incident_type=data['incident_type'],
-            location=eval(data['location']),  # Convert string to dict
+            location=data['location'],  # Store as plain string
             reporter_id=current_user_id,
             severity=data.get('severity', 'medium'),
             photos=photo_paths

@@ -1,7 +1,20 @@
 from datetime import datetime
 from bson import ObjectId
 from backend.utils.db import get_db
+from pymongo import MongoClient
 
+client = MongoClient('mongodb://localhost:27017/')
+db = client['redcross_kenya']
+incidents = db['incidents']
+
+count = 0
+for doc in incidents.find({"location": {"$type": "object"}}):
+    loc = doc['location']
+    new_location = loc.get('address') if isinstance(loc, dict) and 'address' in loc else str(loc)
+    incidents.update_one({"_id": doc["_id"]}, {"$set": {"location": new_location}})
+    count += 1
+
+print(f"Updated {count} incidents with string location.")
 class Incident:
     STATUSES = ['reported', 'verified', 'in_progress', 'resolved', 'closed']
     SEVERITY_LEVELS = ['low', 'medium', 'high', 'critical']
