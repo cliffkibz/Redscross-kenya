@@ -1,13 +1,11 @@
-// Resource Management
-
-// Load Resources
+// Load the resources
 async function loadResources(filters = {}) {
     try {
         showLoading();
         const queryParams = new URLSearchParams(filters);
         const data = await apiRequest(`/resources?${queryParams}`);
         
-        // Update resource list if it exists
+        // Update the list
         const resourceList = document.getElementById('resource-list');
         if (resourceList) {
             resourceList.innerHTML = data.resources.map(resource => 
@@ -24,7 +22,7 @@ async function loadResources(filters = {}) {
     }
 }
 
-// Create Resource
+// Create one
 async function createResource(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -64,7 +62,7 @@ async function createResource(event) {
     }
 }
 
-// Update Resource
+// Update 
 async function updateResource(resourceId, updateData) {
     try {
         showLoading();
@@ -259,9 +257,8 @@ function isAdmin() {
     return userRole === 'admin';
 }
 
-// Event Listeners
+// Event Listeners for form
 document.addEventListener('DOMContentLoaded', () => {
-    // Form handlers
     const createResourceForm = document.getElementById('create-resource-form');
     if (createResourceForm) {
         createResourceForm.addEventListener('submit', createResource);
@@ -272,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filterForm.addEventListener('submit', handleFilterSubmit);
     }
     
-    // Maintenance form handler
+    // Maintenance form
     const maintenanceForm = document.getElementById('add-maintenance-form');
     if (maintenanceForm) {
         maintenanceForm.addEventListener('submit', async (event) => {
@@ -292,18 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Status update handler
+    // Update status
     const statusSelect = document.getElementById('resource-status');
     if (statusSelect) {
         statusSelect.addEventListener('change', async (event) => {
             const resourceId = statusSelect.dataset.resourceId;
             const newStatus = event.target.value;
             await updateResource(resourceId, { status: newStatus });
-            // Reload resource details
+            // Reload
             loadResourceDetails(resourceId);
         });
     }
     
-    // Initial load
+    // load
     loadResources();
 }); 

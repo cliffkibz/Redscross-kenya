@@ -27,13 +27,13 @@ def create_incident():
     data = request.form.to_dict()
     files = request.files.getlist('photos')
     
-    # Validate required fields
+    # Validate
     required_fields = ['title', 'description', 'incident_type', 'location']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
     
     try:
-        # Handle photo uploads
+        # Handle photo
         photo_paths = []
         for file in files:
             if file and allowed_file(file.filename):
@@ -75,8 +75,7 @@ def create_incident():
 @jwt_required(optional=True)
 def get_incidents():
     # Allow public access to incidents list
-    # If user is authenticated, can add user-specific logic if needed
-    # Otherwise, show all incidents
+    # If user is authenticated
     status = request.args.get('status')
     incident_type = request.args.get('type')
     severity = request.args.get('severity')
@@ -247,10 +246,8 @@ def add_note(incident_id):
 @incidents_bp.route('/locations', methods=['GET'])
 @jwt_required()
 def get_incident_locations():
-    """
-    Returns a list of incidents with latitude and longitude for map display.
-    """
-    # Only return incidents with valid coordinates
+    
+    # Return incidents with valid coordinates
     incidents = db.incidents.find({
         "latitude": {"$ne": None},
         "longitude": {"$ne": None}

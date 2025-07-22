@@ -12,7 +12,7 @@ class Incident:
         self.title = title
         self.description = description
         self.incident_type = incident_type if incident_type in self.TYPES else 'other'
-        self.location = location  # {lat: float, lng: float, address: str}
+        self.location = location  # {(lat: float), (lng: float), (address: str)}
         self.reporter_id = reporter_id
         self.severity = severity if severity in self.SEVERITY_LEVELS else 'medium'
         self.status = status if status in self.STATUSES else 'reported'

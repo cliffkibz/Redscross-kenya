@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const bgImages = [
         
+
         '/static/logo/req.jpg',
         '/static/logo/vol.jpg',
         '/static/logo/Careers.png',
@@ -24,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setBgImage(bgIndex);
     }, 5000); 
 
-    // Live Alerts 
     function getToken() {
         return localStorage.getItem('auth_token');
     }
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 100vw;
     height: 100vh;
     z-index: 0;
-    opacity: 0.40; /* Slightly increased opacity for background effect */
+    opacity: 0.40;
     pointer-events: none;
     transition: background-image 1s ease-in-out;
     background-size: cover;
@@ -132,7 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li><i class="fas fa-exclamation-triangle text-danger"></i> <strong>Flood reported</strong> in Kisumu County. <span class="text-muted">2 mins ago</span></li>
                         <li><i class="fas fa-fire text-warning"></i> <strong>Fire outbreak</strong> in Nairobi CBD. <span class="text-muted">10 mins ago</span></li>
                         <li><i class="fas fa-car-crash text-primary"></i> <strong>Road accident</strong> on Mombasa Road. <span class="text-muted">20 mins ago</span></li>
-                        <!-- Dynamic content can be loaded here -->
                     </ul>
                 </div>
             </div>

@@ -1,6 +1,3 @@
-// Alerts and Notifications Management
-
-// SendTest
 async function sendTestAlert(phoneNumber) {
     try {
         showLoading();
@@ -18,7 +15,6 @@ async function sendTestAlert(phoneNumber) {
     }
 }
 
-// Notify
 async function notifyIncidentUpdate(incidentId, notificationType, details = null) {
     try {
         showLoading();
@@ -38,8 +34,6 @@ async function notifyIncidentUpdate(incidentId, notificationType, details = null
         hideLoading();
     }
 }
-
-// NotifyResponders
 async function notifyResponders(incidentId) {
     try {
         showLoading();
@@ -55,8 +49,6 @@ async function notifyResponders(incidentId) {
         hideLoading();
     }
 }
-
-// NotifyResource
 async function notifyResourceAssignment(resourceId) {
     try {
         showLoading();
@@ -229,7 +221,6 @@ function handleTestAlertSubmit(event) {
     sendTestAlert(phoneNumber);
 }
 
-
 async function loadAlertSettings() {
     try {
         const settings = await getAlertSettings();
@@ -237,7 +228,6 @@ async function loadAlertSettings() {
         if (settingsContainer) {
             settingsContainer.innerHTML = createAlertSettingsForm(settings);
             
-            // Add event listener to the new form
             const form = document.getElementById('alert-settings-form');
             if (form) {
                 form.addEventListener('submit', handleAlertSettingsSubmit);

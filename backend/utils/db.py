@@ -4,19 +4,19 @@ from werkzeug.local import LocalProxy
 
 def get_db():
     """
-    Configuration method to return db instance
+    Config method to return db instance
     """
     db_client = getattr(g, "_database", None)
     if db_client is None:
         db_client = g._database = MongoClient(current_app.config['MONGODB_URI'])
     return db_client.get_database()
 
-# Use LocalProxy to read the global db instance with just `db`
+# Use LocalProxy to read the global db instance with 'db'
 db = LocalProxy(get_db)
 
 def close_db(e=None):
     """
-    Close the database connection
+    Close the db connection
     """
     db_client = getattr(g, "_database", None)
     if db_client is not None:
@@ -24,7 +24,7 @@ def close_db(e=None):
 
 def init_db(app):
     """
-    Initialize the database connection
+    Initialize the connection
     """
     # Register the close_db function to be called when the application context ends
     app.teardown_appcontext(close_db)

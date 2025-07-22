@@ -13,7 +13,7 @@ class Resource:
                  capacity=None, description=None, current_incident=None):
         self.name = name
         self.resource_type = resource_type if resource_type in self.TYPES else 'other'
-        self.location = location  # {lat: float, lng: float, address: str}
+        self.location = location  # {(lat: float), (lng: float), (address: str)}
         self.status = status if status in self.STATUSES else 'available'
         self.capacity = capacity
         self.description = description

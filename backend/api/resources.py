@@ -10,7 +10,7 @@ resources_bp = Blueprint('resources', __name__)
 @resources_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_resource():
-    """Create a new resource (admin only)"""
+    #admin only
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
@@ -29,7 +29,7 @@ def create_resource():
             capacity=data['capacity'],
             description=data['description']
         )
-        # Optionally set specifications if your model supports it
+        # Set specifications
         if hasattr(resource, 'specifications'):
             resource.specifications = data['specifications']
         resource.save()
@@ -39,7 +39,7 @@ def create_resource():
 
 @resources_bp.route('/', methods=['GET'])
 def get_resources():
-    """Get a list of resources with optional filtering (public access)"""
+    # Optional filtering (public access)
     from backend.utils.db import get_db
     db = get_db()
     # Get query parameters
@@ -55,7 +55,7 @@ def get_resources():
     if status:
         query['status'] = status
     
-    # Get resources with pagination
+    # pagination
     cursor = db.resources.find(query).skip((page - 1) * per_page).limit(per_page)
     resources = []
     for resource_data in cursor:
@@ -87,7 +87,7 @@ def get_resources():
 @resources_bp.route('/<resource_id>', methods=['GET'])
 @jwt_required()
 def get_resource(resource_id):
-    """Get a specific resource by ID"""
+    # Get a specific resource by ID
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -101,7 +101,7 @@ def get_resource(resource_id):
 @resources_bp.route('/<resource_id>', methods=['PUT'])
 @jwt_required()
 def update_resource(resource_id):
-    """Update a resource (admin only)"""
+    #Update a resource (admin only)
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
@@ -126,7 +126,7 @@ def update_resource(resource_id):
 @resources_bp.route('/<resource_id>/maintenance', methods=['POST'])
 @jwt_required()
 def add_maintenance_record(resource_id):
-    """Add a maintenance record for a resource (admin and responders)"""
+    #Add a maintenance record for (admin and responders)
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role not in ['admin', 'responder']:
         return jsonify({'error': 'Unauthorized'}), 403
@@ -160,7 +160,7 @@ def add_maintenance_record(resource_id):
 @resources_bp.route('/<resource_id>/maintenance/<maintenance_id>/complete', methods=['POST'])
 @jwt_required()
 def complete_maintenance(resource_id, maintenance_id):
-    """Mark a maintenance record as complete (admin and responders)"""
+    #Mark a maintenance record as complete (admin and responders)"""
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role not in ['admin', 'responder']:
         return jsonify({'error': 'Unauthorized'}), 403
@@ -185,7 +185,7 @@ def complete_maintenance(resource_id, maintenance_id):
     maintenance_record['completed_at'] = datetime.utcnow()
     maintenance_record['completion_notes'] = data.get('completion_notes')
     
-    # Update resource status if no other pending maintenance
+    # Update resource status
     has_pending = any(record['status'] == 'pending' for record in resource.maintenance_records)
     if not has_pending:
         resource.status = 'available'
@@ -199,7 +199,7 @@ def complete_maintenance(resource_id, maintenance_id):
 @resources_bp.route('/<resource_id>/release', methods=['POST'])
 @jwt_required()
 def release_resource(resource_id):
-    """Release a resource from an incident (admin and responders)"""
+    #Release a resource from an incident (admin and responders)
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role not in ['admin', 'responder']:
         return jsonify({'error': 'Unauthorized'}), 403
@@ -223,7 +223,7 @@ def release_resource(resource_id):
 @resources_bp.route('/available/<incident_type>', methods=['GET'])
 @jwt_required()
 def get_available_resources(incident_type):
-    """Get available resources for a specific incident type (responders and admins)"""
+    # Get available resources for a specific incident type (responders and admins)
     current_user = User.get_by_id(get_jwt_identity())
     if not current_user or current_user.role not in ['admin', 'responder']:
         return jsonify({'error': 'Unauthorized'}), 403
@@ -231,7 +231,7 @@ def get_available_resources(incident_type):
     # Get available resources that match the incident type
     resources = Resource.objects(
         status='available',
-        type__in=[incident_type, 'general']  # Include general-purpose resources
+        type__in=[incident_type, 'general']  
     )
     
     return jsonify({

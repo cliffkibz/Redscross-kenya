@@ -13,16 +13,13 @@ auth_bp = Blueprint('auth', __name__)
 def register():
     data = request.get_json()
     
-    # Validate required fields
     required_fields = ['username', 'email', 'password']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    # Check if user already exists
     if User.get_by_email(data['email']):
         return jsonify({'error': 'Email already registered'}), 400
     
-    # Create new user
     try:
         user = User(
             username=data['username'],
@@ -34,7 +31,6 @@ def register():
         user.is_active = True  # Ensure user is active on registration
         user.save()
         
-        # Create tokens
         access_token = create_access_token(identity=str(user._id))
         refresh_token = create_refresh_token(identity=str(user._id))
         
@@ -153,5 +149,4 @@ def register_page():
 
 @auth_bp.route('/post_login')
 def post_login():
-    # This route can be used as a redirect after login/register
     return redirect(url_for('user_dashboard'))

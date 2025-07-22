@@ -24,8 +24,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Resources will be loaded here by JS -->
-                        </tbody>
+                        {% for resource in resources %}
+                            <tr>
+                                <td>{{ resource.name }}</td>
+                                <td>{{ resource.type }}</td>
+                                <td>{{ resource.status }}</td>
+                                <td>{{ resource.location }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
                     </table>
                 </div>
             </div>

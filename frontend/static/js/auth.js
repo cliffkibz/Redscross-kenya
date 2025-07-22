@@ -1,30 +1,22 @@
-
 const API_BASE_URL = '/api';
-
-
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
-
 function getToken() {
     return localStorage.getItem(TOKEN_KEY);
 }
-
 function getRefreshToken() {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
-
 function setTokens(accessToken, refreshToken) {
     localStorage.setItem(TOKEN_KEY, accessToken);
     if (refreshToken) {
         localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     }
 }
-
 function clearTokens() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
-
 async function apiRequest(endpoint, options = {}) {
     const token = getToken();
     const headers = {
@@ -40,7 +32,6 @@ async function apiRequest(endpoint, options = {}) {
         });
 
         if (response.status === 401) {
-            // Token expired, try to refresh
             const refreshToken = getRefreshToken();
             if (refreshToken) {
                 const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -53,11 +44,9 @@ async function apiRequest(endpoint, options = {}) {
                 if (refreshResponse.ok) {
                     const { access_token } = await refreshResponse.json();
                     setTokens(access_token);
-                    // Retry the original request with new token
                     return apiRequest(endpoint, options);
                 }
             }
-            // If refresh failed, redirect to login
             clearTokens();
             window.location.href = '/api/auth/login';
             return;
@@ -74,8 +63,6 @@ async function apiRequest(endpoint, options = {}) {
         throw error;
     }
 }
-
-
 async function login(username, password) {
     try {
         const data = await apiRequest('/auth/login', {
@@ -96,7 +83,6 @@ async function login(username, password) {
         throw error;
     }
 }
-
 async function register(userData) {
     try {
         const data = await apiRequest('/auth/register', {
@@ -112,7 +98,6 @@ async function register(userData) {
         throw error;
     }
 }
-
 async function logout() {
     try {
         await apiRequest('/auth/logout', { method: 'POST' });
@@ -123,7 +108,6 @@ async function logout() {
         window.location.href = '/api/auth/login';
     }
 }
-
 async function getCurrentUser() {
     try {
         return await apiRequest('/auth/me');
@@ -132,8 +116,6 @@ async function getCurrentUser() {
         return null;
     }
 }
-
-
 function handleLogin(event) {
     event.preventDefault();
     const username = document.getElementById('username').value;
@@ -143,7 +125,6 @@ function handleLogin(event) {
         .catch(error => console.error('Login error:', error))
         .finally(hideLoading);
 }
-
 function handleRegister(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -159,16 +140,12 @@ function handleRegister(event) {
         .catch(error => console.error('Registration error:', error))
         .finally(hideLoading);
 }
-
-
 function showLoading() {
     document.getElementById('loading-spinner').classList.remove('d-none');
 }
-
 function hideLoading() {
     document.getElementById('loading-spinner').classList.add('d-none');
 }
-
 function showToast(type, message) {
     const toastContainer = document.querySelector('.toast-container');
     const toast = document.createElement('div');
@@ -176,37 +153,29 @@ function showToast(type, message) {
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'assertive');
     toast.setAttribute('aria-atomic', 'true');
-    
     toast.innerHTML = `
         <div class="d-flex">
             <div class="toast-body">
                 ${message}
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-    
+        </div>`;
     toastContainer.appendChild(toast);
     const bsToast = new bootstrap.Toast(toast);
     bsToast.show();
-    
     toast.addEventListener('hidden.bs.toast', () => {
         toast.remove();
     });
 }
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
-    }
-    
+    }    
     const registerForm = document.getElementById('register-form');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
-    }
-    
+    }   
     const logoutButton = document.querySelector('[onclick="logout()"]');
     if (logoutButton) {
         logoutButton.addEventListener('click', (e) => {
@@ -214,19 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
             logout();
         });
     }
-    
-
     const token = getToken();
     if (token) {
         getCurrentUser().then(user => {
             if (user) {
-                // Update UI for authenticated user
                 const userDropdown = document.getElementById('userDropdown');
                 if (userDropdown) {
                     userDropdown.textContent = user.username;
                 }
             } else {
-                // Invalid token, redirect to login
                 clearTokens();
                 window.location.href = '/api/auth/login';
             }

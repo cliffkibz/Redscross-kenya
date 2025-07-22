@@ -2,7 +2,6 @@ from datetime import datetime
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.utils.db import get_db
-
 class User:
     ROLES = ['public', 'responder', 'admin']
     

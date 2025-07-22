@@ -3,14 +3,13 @@ let map;
 let incidentMarkers = {};
 let currentIncident = null;
 
-// Initialize Map
+// Start Map
 function initMap() {
-    map = L.map('incident-map').setView([-0.0236, 37.9062], 6); // Center on Kenya
+    map = L.map('incident-map').setView([-0.0236, 37.9062], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Add click handler for new incidents
     map.on('click', (e) => {
         if (document.getElementById('create-incident-form')) {
             document.getElementById('latitude').value = e.latlng.lat;
@@ -22,24 +21,19 @@ function initMap() {
         }
     });
 }
-
-// Load Incidents
 async function loadIncidents(filters = {}) {
     try {
         showLoading();
         const queryParams = new URLSearchParams(filters);
         const data = await apiRequest(`/incidents?${queryParams}`);
         
-        // Clear existing markers
         Object.values(incidentMarkers).forEach(marker => map.removeLayer(marker));
         incidentMarkers = {};
         
-        // Add markers for each incident
         data.incidents.forEach(incident => {
             const marker = L.marker([incident.location.latitude, incident.location.longitude])
                 .bindPopup(createIncidentPopup(incident));
             
-            // Color marker based on severity
             const severityColors = {
                 'low': 'green',
                 'medium': 'orange',
@@ -58,7 +52,6 @@ async function loadIncidents(filters = {}) {
             incidentMarkers[incident._id] = marker;
         });
         
-        // Update incident list if it exists
         const incidentList = document.getElementById('incident-list');
         if (incidentList) {
             incidentList.innerHTML = data.incidents.map(incident => 
@@ -75,7 +68,6 @@ async function loadIncidents(filters = {}) {
     }
 }
 
-// Create Incident
 async function createIncident(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -109,8 +101,6 @@ async function createIncident(event) {
         hideLoading();
     }
 }
-
-// Update Incident
 async function updateIncident(incidentId, updateData) {
     try {
         showLoading();
@@ -149,8 +139,6 @@ async function addIncidentNote(incidentId, note) {
         hideLoading();
     }
 }
-
-// Assign Responder
 async function assignResponder(incidentId, responderId) {
     try {
         showLoading();
@@ -169,8 +157,6 @@ async function assignResponder(incidentId, responderId) {
         hideLoading();
     }
 }
-
-// Assign Resource
 async function assignResource(incidentId, resourceId) {
     try {
         showLoading();
@@ -189,8 +175,6 @@ async function assignResource(incidentId, resourceId) {
         hideLoading();
     }
 }
-
-// UI Helpers
 function createIncidentPopup(incident) {
     return `
         <div class="incident-popup">
@@ -231,8 +215,6 @@ function createIncidentCard(incident) {
         </div>
     `;
 }
-
-// Filter Handlers
 function handleFilterSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -244,7 +226,6 @@ function handleFilterSubmit(event) {
         end_date: formData.get('end_date')
     };
     
-    // Remove empty filters
     Object.keys(filters).forEach(key => {
         if (!filters[key]) delete filters[key];
     });
@@ -254,14 +235,12 @@ function handleFilterSubmit(event) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize map if it exists
     const mapElement = document.getElementById('incident-map');
     if (mapElement) {
         initMap();
         loadIncidents();
     }
     
-    // Form handlers
     const createIncidentForm = document.getElementById('create-incident-form');
     if (createIncidentForm) {
         createIncidentForm.addEventListener('submit', createIncident);
@@ -272,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         filterForm.addEventListener('submit', handleFilterSubmit);
     }
     
-    // Note form handler
     const noteForm = document.getElementById('add-note-form');
     if (noteForm) {
         noteForm.addEventListener('submit', async (event) => {
@@ -286,14 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Status update handler
     const statusSelect = document.getElementById('incident-status');
     if (statusSelect) {
         statusSelect.addEventListener('change', async (event) => {
             const incidentId = statusSelect.dataset.incidentId;
             const newStatus = event.target.value;
             await updateIncident(incidentId, { status: newStatus });
-            // Reload incident details
             loadIncidentDetails(incidentId);
         });
     }

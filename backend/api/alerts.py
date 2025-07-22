@@ -19,7 +19,6 @@ def test_alert():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # Only admins can send test alerts
     if user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
     
@@ -56,7 +55,6 @@ def notify_incident(incident_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # Only responders and admins can send notifications
     if user.role not in ['responder', 'admin']:
         return jsonify({'error': 'Unauthorized'}), 403
     
@@ -127,7 +125,6 @@ def notify_responders(incident_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # Only admins can notify all responders
     if user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
     
@@ -136,7 +133,7 @@ def notify_responders(incident_id):
         return jsonify({'error': 'Incident not found'}), 404
     
     try:
-        # Get all responders
+        
         responders = User.get_by_role('responder')
         sent_count = 0
         
@@ -161,7 +158,6 @@ def notify_resource_assignment(resource_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # Only admins and responders can notify resource assignments
     if user.role not in ['admin', 'responder']:
         return jsonify({'error': 'Unauthorized'}), 403
     
